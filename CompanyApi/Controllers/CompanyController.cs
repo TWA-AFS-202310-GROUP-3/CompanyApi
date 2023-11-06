@@ -43,7 +43,7 @@ namespace CompanyApi.Controllers
         [HttpGet("{id}")]
         public ActionResult<Company> Get(string id)
         {
-            var company = companies.FirstOrDefault(cp => cp.Id == id);
+            var company = companies.Find(cp => cp.Id == id);
 
             if (company != null)
             {
@@ -53,18 +53,10 @@ namespace CompanyApi.Controllers
             return NotFound();
         }
 
-        /*[HttpGet]
-        public ActionResult<List<Company>> GetCompanies(int pageSize, int pageIndex)
-        {
-            var startIndex = (pageIndex - 1) * pageSize;
-            var companiesPage = companies.Skip(startIndex).Take(pageSize).ToList();
-            return Ok(companiesPage);
-        }*/
-
         [HttpPut("{id}")]
         public ActionResult<Company> Update(string id, [FromBody] Company updatedCompany)
         {
-            var existingCompany = companies.FirstOrDefault(c => c.Id == id);
+            var existingCompany = companies.Find(c => c.Id == id);
             if (existingCompany == null)
             {
                 return NotFound();
@@ -74,5 +66,40 @@ namespace CompanyApi.Controllers
 
             return NoContent();
         }
+
+        [HttpPost("{companyId}/employees")]
+        public ActionResult<Company> AddEmployee(string companyId, [FromBody] Employee employee)
+        {
+            var company = companies.Find(c => c.Id == companyId);
+            if (company == null)
+            {
+                return NotFound();
+            }
+
+            //employee.Id = Guid.NewGuid().ToString();
+            company.Employees.Add(employee);
+
+            return Ok(employee);
+        }
+
+        /*[HttpDelete("employees/{employeeId}")]
+        public ActionResult<Company> DeleteEmployee(string companyId, string employeeId)
+        {
+            var company = companies.Find(c => c.Id == companyId);
+            if (company == null)
+            {
+                return NotFound();
+            }
+
+            var employee = company.Employees.FirstOrDefault(e => e.Id == employeeId);
+            if (employee == null)
+            {
+                return NotFound("Employee not found");
+            }
+
+            company.Employees.Remove(employee);
+
+            return NoContent();
+        }*/
     }
 }

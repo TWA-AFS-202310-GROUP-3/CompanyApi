@@ -150,28 +150,6 @@ namespace CompanyApiTest
         }
 
         [Fact]
-        public void GetAll_Returns200WithListOfCompanies()
-        {
-            // Arrange
-            var controller = new CompanyController();
-            int? pageSize = 10;
-            int? pageIndex = 1;
-
-            // Act
-            var response = controller.GetAll(pageSize, pageIndex);
-            var okResult = Assert.IsType<OkObjectResult>(response.Result);
-            var companies = Assert.IsType<List<Company>>(okResult.Value);
-
-            // Assert
-            Assert.Equal(200, okResult.StatusCode);
-            Assert.NotNull(companies);
-
-            // Add additional assertions based on your requirements
-            // For example, you can check if the returned list has the expected number of items
-            Assert.Equal(pageSize, companies.Count);
-        }
-
-        [Fact]
         public async Task Should_return_status_204_When_Update_Given_updated_company_name()
         {
             await ClearDataAsync();
@@ -196,5 +174,27 @@ namespace CompanyApiTest
 
             Assert.Equal(HttpStatusCode.NotFound, httpResponseMessage.StatusCode);
         }
+
+        [Fact]
+        public async Task Should_Add_Employee_to_specific_company_When_AddEmployee_Given_()
+        {
+            await ClearDataAsync();
+            var companyGiven = new CreateCompanyRequest("BlueSky Digital Media");
+            var createResponse = await httpClient.PostAsync(
+                "/api/companies",
+                SerializeObjectToContent(companyGiven));
+            var company = await createResponse.Content.ReadFromJsonAsync<Company>();
+            var newEmployee = new Employee("Erika");
+            company.Employees.Add(newEmployee);
+
+            var httpResponseMessage = await httpClient.PostAsJsonAsync($"api/companies/{company.Id}/employees", newEmployee);
+
+            Employee? addedEmployee = await httpResponseMessage.Content.ReadFromJsonAsync<Employee>();
+
+            Assert.Equal("Erika", addedEmployee.Name);
+            Assert.Equal(HttpStatusCode.OK, httpResponseMessage.StatusCode);
+        }
+
+        
     }
 }
