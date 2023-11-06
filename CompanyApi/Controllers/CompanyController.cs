@@ -9,6 +9,18 @@ namespace CompanyApi.Controllers
     {
         private static List<Company> companies = new List<Company>();
 
+        [HttpPut("{id}")]
+        public ActionResult<Company> Put(string id, CreateCompanyRequest company)
+        {
+            var previousCompany = companies.Find(company => company.Id == id);
+            if (previousCompany == null)
+            {
+                return NotFound();
+            }
+            previousCompany.Name = company.Name;
+            return NoContent();
+        }
+
         [HttpGet]
         public ActionResult<List<Company>> Get()
         {

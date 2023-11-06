@@ -2,6 +2,7 @@ using CompanyApi;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Newtonsoft.Json;
 using System.Net;
+using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
 
@@ -15,6 +16,37 @@ namespace CompanyApiTest
         {
             WebApplicationFactory<Program> webApplicationFactory = new WebApplicationFactory<Program>();
             httpClient = webApplicationFactory.CreateClient();
+        }
+
+        [Fact]
+        public async Task Should_return_success_code_when_update_successfully_given_existed_company()
+        {
+            //given
+            await ClearDataAsync();
+            CreateCompanyRequest companyGiven = new CreateCompanyRequest("BlueSky Digital Media");
+            CreateCompanyRequest newCompany = new CreateCompanyRequest("SLB");
+            HttpResponseMessage postResponseMessage = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            var createdCompany = await postResponseMessage.Content.ReadFromJsonAsync<Company>();
+
+            //whenw
+            HttpResponseMessage postResponseMessage2 = await httpClient.PutAsJsonAsync($"/api/companies/{createdCompany?.Id}", newCompany);
+
+            //then
+            Assert.Equal(HttpStatusCode.NoContent, postResponseMessage2.StatusCode);
+        }
+
+        [Fact]
+        public async Task Should_return_bad_request_when_update_given_unexisted_company()
+        {
+            //given
+            await ClearDataAsync();
+            CreateCompanyRequest companyGiven = new CreateCompanyRequest("BlueSky Digital Media");
+
+            //when
+            HttpResponseMessage httpResponseMessage = await httpClient.PutAsJsonAsync("api/companies/unexistedcompany", companyGiven);
+
+            //then
+            Assert.Equal(HttpStatusCode.NotFound, httpResponseMessage.StatusCode);
         }
 
         [Fact]
