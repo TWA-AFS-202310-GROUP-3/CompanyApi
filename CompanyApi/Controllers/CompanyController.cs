@@ -8,6 +8,11 @@ namespace CompanyApi.Controllers
     {
         private static List<Company> companies = new List<Company>();
 
+        [HttpGet]
+        public ActionResult<List<Company>> Get()
+        {
+            return Ok(companies);
+        }
         [HttpPost]
         public ActionResult<Company> Create(CreateCompanyRequest request)
         {

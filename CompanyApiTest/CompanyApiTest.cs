@@ -2,6 +2,7 @@ using CompanyApi;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Newtonsoft.Json;
 using System.Net;
+using System.Net.Http.Json;
 using System.Text;
 
 namespace CompanyApiTest
@@ -14,6 +15,23 @@ namespace CompanyApiTest
         {
             WebApplicationFactory<Program> webApplicationFactory = new WebApplicationFactory<Program>();
             httpClient = webApplicationFactory.CreateClient();
+        }
+
+        [Fact]
+        public async Task Should_return_all_companies_when_given_no_company_id()
+        {
+            //given
+            await ClearDataAsync();
+            Company companyGiven = new Company("BlueSky Digital Media");
+
+            //when
+            await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync("/api/companies");
+            var response = await httpResponseMessage.Content.ReadFromJsonAsync<List<Company>>();
+
+            //then
+            Assert.Equal(HttpStatusCode.OK, httpResponseMessage.StatusCode);
+            Assert.Equal(companyGiven.Name, response[0].Name);
         }
 
         [Fact]
