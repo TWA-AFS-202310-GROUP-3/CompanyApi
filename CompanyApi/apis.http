@@ -58,4 +58,48 @@ Content-Type: application/json; charset=utf-8
 ### Case1: Sucess, 204 NO Content
 ### Case2: 404 Company NOT Found
 
+# Employees APIS
+## POST /api/companies/companyID/employees
+## GET /api/companies/companyID/employees
+## PUT /api/companies/companyID/employees/{employeeId}
+## DELETE /api/companies/companyID/employees/{employeeId}
+
+## AC6 Create Employee API 
+PUT https://{{hostname}}:{{port}}/api/companies/{companyId}/employees
+Content-Type: application/json; charset=utf-8
+
+{
+  "name": "xianke"
+}
+## Response:
+### Case1:  Employee Created Success, Return Employee created with Status Created( 201 )
+### Case2:  Employee Name Exsiting, Return 400 Bad request
+### Case3:  Other Bad Reqeust ( Request Body Not Valid )
+
+## AC7 Delete Employee by ID 
+DELETE https://{{hostname}}:{{port}}/api/companies/{companyId}/employees/{employeeId}
+
+### Response: 
+### Case1:  Employee Deleted Success, Return Employee with Status NO CONTENT( 204 )
+### Case2:  Employee Not Found, Return Status NOT FOUND( 404 )
+
+## AC8 Get All Employees in company with companyId
+GET https://{{hostname}}:{{port}}/api/companies/{companyId}/employees
+
+### Response: Return Employee list with Status 200
+
+## AC9 Update Employee
+PUT https://{{hostname}}:{{port}}/api/companies/{companyId}/employees/{employeeId}
+
+### Response: 
+### Case1: Employee Update Sucess, Return with Status 200
+### Case2: 404 Employee NOT Found
+
+## AC10 Delete Company by ID 
+DELETE https://{{hostname}}:{{port}}/api/companies/{companyId}
+
+### Response: 
+### Case1:  Company Deleted Success, Return OK with Status NO CONTENT( 204 )
+### Case2:  Company Not Found, Return Status NOT FOUND( 404 )
+
 ######################################################################################
