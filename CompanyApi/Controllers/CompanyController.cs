@@ -21,7 +21,7 @@ namespace CompanyApi.Controllers
         }
 
         [HttpGet]
-        public ActionResult<List<Company>> GetALLCompanies([FromQuery] int? page_size, int? index)
+        public ActionResult<List<Company>> GetCompanies([FromQuery] int? page_size, int? index)
         {
             if (page_size != null && index != null)
             {
@@ -39,14 +39,29 @@ namespace CompanyApi.Controllers
         [HttpGet("{id}")]
         public ActionResult<Company> GetByID(string id)
         {
-            var result =  companies.Find(company => company.Id == id);
-            if (result == null)
+            var existingCompany =  companies.Find(company => company.Id == id);
+            if (existingCompany == null)
             {
                 return NotFound($"The item with id {id} does not exist.");
             }
-            return Ok(result);
+            return Ok(existingCompany);
         }
 
+        [HttpPut("{id}")]
+        public ActionResult<Company> PutCompany (string id, [FromBody] Company updateCompay)
+        {
+            bool isNotFound = false;
+            var existingCompany = companies.Find(company => company.Id == id);
+            if (existingCompany == null)
+            {
+                isNotFound = true;
+            } else
+            {
+                existingCompany.Name = updateCompay.Name;
+            }
+
+            return isNotFound ? NotFound($"The item with id {id} does not exist.") : existingCompany;
+        }
 
         [HttpDelete]
         public void ClearData()

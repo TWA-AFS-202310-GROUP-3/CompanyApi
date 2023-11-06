@@ -147,6 +147,45 @@ namespace CompanyApiTest
             Assert.Equal("Facebook", gotCompanies[1].Name);
         }
 
+        [Fact]
+        public async Task Should_return_updated_company_with_200_When_put_Given_id_name()
+        {
+            //Given
+            await ClearDataAsync();
+            CompanyRequest companyGiven = new CompanyRequest("Google");
+            HttpResponseMessage httpResponseMessage = await httpClient.PostAsJsonAsync(url, companyGiven);
+            Company createdCompany = await httpResponseMessage.Content.ReadFromJsonAsync<Company>();
+            string id = createdCompany.Id;
+            string updateUrl = url + $"/{id}";
+            createdCompany.Name = "Facebook";
+
+            //When
+            var putResponse = await httpClient.PutAsJsonAsync(updateUrl, createdCompany);
+            var updatedCompany = await putResponse.Content.ReadFromJsonAsync<Company>();
+
+            //Then
+            Assert.NotNull(updatedCompany);
+            Assert.Equal("Facebook", updatedCompany.Name);
+        }
+
+        [Fact]
+        public async Task Should_return_not_found_with_404_When_put_Given_nonexisting_id()
+        {
+            //Given
+            await ClearDataAsync();
+            CompanyRequest companyGiven = new CompanyRequest("Google");
+            HttpResponseMessage httpResponseMessage = await httpClient.PostAsJsonAsync(url, companyGiven);
+            Company createdCompany = await httpResponseMessage.Content.ReadFromJsonAsync<Company>();
+            string id = createdCompany.Id;
+            string updateUrl = url + $"/{id}1234";
+            createdCompany.Name = "Facebook";
+
+            //When
+            var putResponse = await httpClient.PutAsJsonAsync(updateUrl, createdCompany);
+
+            //Then
+            Assert.Equal(HttpStatusCode.NotFound, putResponse.StatusCode);
+        }
 
         private async Task<T?> DeserializeTo<T>(HttpResponseMessage httpResponseMessage)
         {
