@@ -233,11 +233,14 @@ namespace CompanyApiTest
             string deletEmployUrl = postNewCommerUrl + $"/{employId}";
 
             // When
+            HttpResponseMessage httpResponseMessage_deleteEmployee_NotFound = await httpClient.DeleteAsync(deletEmployUrl + "123");
+            Assert.Equal(HttpStatusCode.NotFound, httpResponseMessage_deleteEmployee_NotFound.StatusCode);
             HttpResponseMessage httpResponseMessage_deleteEmployee = await httpClient.DeleteAsync(deletEmployUrl);
-
+            
 
             // Then
             Assert.Equal(HttpStatusCode.NoContent, httpResponseMessage_deleteEmployee.StatusCode);
+           
 
 
 

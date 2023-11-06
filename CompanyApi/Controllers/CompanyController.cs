@@ -65,6 +65,7 @@ namespace CompanyApi.Controllers
         {
             var theCompanyToJoin = companies.Find(company => company.Id == company_id);
             Employee newEmployee = new Employee(newCommer.Name);
+            theCompanyToJoin.Employees.Add(newEmployee);
 
             return theCompanyToJoin == null ? NotFound($"The company with id {company_id} does not exist.") : Created("", newEmployee);
         }
@@ -72,8 +73,8 @@ namespace CompanyApi.Controllers
         [HttpDelete("{company_id}/{employee_id}")]
         public ActionResult<Employee> DeleteEmployee(string company_id, string employee_id)
         {
-            return NoContent();
-         /*   var theCompanyJoined = companies.Find(company => company.Id == company_id);
+
+            var theCompanyJoined = companies.Find(company => company.Id == company_id);
             if (theCompanyJoined == null)
             {
                 return NotFound($"The company with id {company_id} does not exist.");
@@ -84,7 +85,7 @@ namespace CompanyApi.Controllers
                 return NotFound($"The employee with id {employee_id} does not exist");
             }
             theCompanyJoined.Employees.Remove(employeeToGo);
-            return NoContent();*/
+            return NoContent();
         }
 
         [HttpDelete]
