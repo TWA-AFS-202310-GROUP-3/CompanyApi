@@ -66,5 +66,22 @@ namespace CompanyApi.Controllers
             }
             return NotFound();
         }
+
+        [HttpPost("{id}/employees")]
+        public ActionResult<Employee> AddEmployee(string id, CreateEmployeeRequest request)
+        {
+            Employee employeeCreated = new Employee(request.Name);
+            foreach (var company in companies.Where(company => company.Id.Equals(id)))
+            {
+                if (company.Employees.Exists(employee => employee.Name.Equals(request.Name)))
+                {
+                    return BadRequest();
+                }
+                company.Employees.Add(employeeCreated);
+                return StatusCode(StatusCodes.Status201Created, employeeCreated);
+            }
+            return NotFound();
+        }
+
     }
 }
