@@ -1,4 +1,6 @@
 using CompanyApi;
+using CompanyApi.Controllers;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Newtonsoft.Json;
 using System.Net;
@@ -139,18 +141,34 @@ namespace CompanyApiTest
             await httpClient.PostAsJsonAsync("api/companies", companyGiven1);
             await httpClient.PostAsJsonAsync("api/companies", companyGiven2);
 
-            var response = await httpClient.GetAsync("/api/company?pageIndex=1&pageSize=2");
-            //response.EnsureSuccessStatusCode();
-            var content = await response.Content.ReadAsStringAsync();
-            var companies = JsonConvert.DeserializeObject<List<Company>>(content);
+            var httpResponseMessage = await httpClient.GetAsync("/api/companies?pageIndex=1&pageSize=2");
+            List<Company>? companies = await httpResponseMessage.Content.ReadFromJsonAsync<List<Company>>();
 
-            Assert.Equal(2, companies.Count);
+            Assert.Equal(HttpStatusCode.OK, httpResponseMessage.StatusCode);
+            Assert.Equal("BlueSky Digital Media", companies[0].Name);
+            Assert.Equal("Hyperoptics", companies[1].Name);
+        }
 
-            foreach (var company in companies)
-            {
-                Assert.NotNull(company.Id);
-                Assert.NotNull(company.Name);
-            }
+        [Fact]
+        public void GetAll_Returns200WithListOfCompanies()
+        {
+            // Arrange
+            var controller = new CompanyController();
+            int? pageSize = 10;
+            int? pageIndex = 1;
+
+            // Act
+            var response = controller.GetAll(pageSize, pageIndex);
+            var okResult = Assert.IsType<OkObjectResult>(response.Result);
+            var companies = Assert.IsType<List<Company>>(okResult.Value);
+
+            // Assert
+            Assert.Equal(200, okResult.StatusCode);
+            Assert.NotNull(companies);
+
+            // Add additional assertions based on your requirements
+            // For example, you can check if the returned list has the expected number of items
+            Assert.Equal(pageSize, companies.Count);
         }
 
         [Fact]

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 
 namespace CompanyApi.Controllers
 {
@@ -27,10 +28,16 @@ namespace CompanyApi.Controllers
         }
 
         [HttpGet]
-        public ActionResult<List<Company>> GetAll()
+        public ActionResult<List<Company>> GetAll([FromQuery] int? pageSize, int? pageIndex)
         {
-            return companies;
+            if (pageSize != null && pageIndex != null)
+            {
+                var startIndex = (pageIndex - 1) * pageSize;
+                var companiesPage = companies.Skip((int)startIndex).Take((int)pageSize).ToList();
+                return Ok(companiesPage);
+            }
 
+            return companies;
         }
 
         [HttpGet("{id}")]
@@ -46,13 +53,13 @@ namespace CompanyApi.Controllers
             return NotFound();
         }
 
-        [HttpGet]
+        /*[HttpGet]
         public ActionResult<List<Company>> GetCompanies(int pageSize, int pageIndex)
         {
             var startIndex = (pageIndex - 1) * pageSize;
             var companiesPage = companies.Skip(startIndex).Take(pageSize).ToList();
             return Ok(companiesPage);
-        }
+        }*/
 
         [HttpPut("{id}")]
         public ActionResult<Company> Update(string id, [FromBody] Company updatedCompany)
