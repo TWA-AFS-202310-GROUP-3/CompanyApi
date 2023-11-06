@@ -114,14 +114,39 @@ namespace CompanyApiTest
             HttpResponseMessage httpResponseMessage = await httpClient.PostAsJsonAsync(url, companyGiven);
             Company? createdCompany = await httpResponseMessage.Content.ReadFromJsonAsync<Company>();
             string id = createdCompany.Id;
+            string fakeURL = $"{url}/99";
 
             //When
-            string fakeURL = $"{url}/99";
             HttpResponseMessage gotCompanyMessage = await httpClient.GetAsync(fakeURL);
 
             //Then
             Assert.Equal(HttpStatusCode.NotFound, gotCompanyMessage.StatusCode);
         }
+
+        [Fact]
+        public async Task Should_return_one_page_size_companies_When_get_Given_pageSize_index()
+        {
+            //Given
+            await ClearDataAsync();
+            CompanyRequest[] companiesGiven = new CompanyRequest[10];
+            string[] companiesName = { "Google", "Tencent", "Baidu", "SLB", "Tesla", "Porsche", "Honda", "Benze", "Mazda", "Facebook" };
+            for (int i = 0; i < companiesGiven.Length; i++)
+            {
+                await httpClient.PostAsJsonAsync(url, new CompanyRequest(companiesName[i]));
+            }
+            int page = 4;
+            int index = 3;
+            string urlForPage = $"{url}?page_size={page}&index={index}";
+
+            //When
+            HttpResponseMessage gotCompaniesMessage = await httpClient.GetAsync(urlForPage);
+            List<Company>? gotCompanies = await gotCompaniesMessage.Content.ReadFromJsonAsync<List<Company>>();
+            //Then
+
+            Assert.Equal("Mazda", gotCompanies[0].Name);
+            Assert.Equal("Facebook", gotCompanies[1].Name);
+        }
+
 
         private async Task<T?> DeserializeTo<T>(HttpResponseMessage httpResponseMessage)
         {
