@@ -52,6 +52,20 @@ namespace CompanyApi.Controllers
             return Ok(company);
         }
 
+        [HttpPut("{id}")]
+        public ActionResult<Company> UpdateCompany(string id, [FromBody] Company updatedCompany)
+        {
+            var company = companies.Find(c => c.Id == id);
+
+            if (company == null)
+            {
+                return NotFound();
+            }
+
+            company.Name = updatedCompany.Name;
+            return Ok(company);
+        }
+
         [HttpDelete]
         public void ClearData()
         { 

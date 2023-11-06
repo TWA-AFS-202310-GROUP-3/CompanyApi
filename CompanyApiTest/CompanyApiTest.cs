@@ -167,6 +167,27 @@ namespace CompanyApiTest
             Assert.Equal(HttpStatusCode.BadRequest, httpResponseMessage.StatusCode);
         }
 
+        [Fact]
+        public async Task Should_update_basic_information_when_update_company_given_company_id()
+        {
+            //Given
+            await ClearDataAsync();
+            Company companyGiven = new Company("slb");
+            HttpResponseMessage postResponseMessage = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            var createdCompany = await postResponseMessage.Content.ReadFromJsonAsync<Company>();
+
+            string updatedName = "google";
+            companyGiven.Name = updatedName;
+            //When
+            HttpResponseMessage response = await httpClient.PutAsJsonAsync($"/api/companies/{createdCompany.Id}", companyGiven);
+            HttpResponseMessage getResponse = await httpClient.GetAsync($"/api/companies/{createdCompany.Id}");
+            var updatedCompany = await getResponse.Content.ReadFromJsonAsync<Company>();
+            //Then
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
+            Assert.Equal(updatedName, updatedCompany.Name);
+        }
+
 
         private async Task<T?> DeserializeTo<T>(HttpResponseMessage httpResponseMessage)
         {
@@ -183,6 +204,12 @@ namespace CompanyApiTest
         private async Task ClearDataAsync()
         {
             await httpClient.DeleteAsync("/api/companies");
+        }
+
+        private async Task AddCompanyAsync(Company company)
+        {
+            HttpResponseMessage postResponse = await httpClient.PostAsJsonAsync("/api/companies", company);
+            postResponse.EnsureSuccessStatusCode();
         }
 
         private async Task AddCompaniesAsync(List<Company> companies)
