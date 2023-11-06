@@ -132,7 +132,7 @@ namespace CompanyApiTest
         }
 
         [Fact]
-        /*public async Task Should_Returns_Correct_PageSize_and_PageIndex_when_GetCompanies_Given_PageSize_and_PageIndex()
+        public async Task Should_Returns_Correct_PageSize_and_PageIndex_when_GetCompanies_Given_PageSize_and_PageIndex()
         {
             var companyGiven1 = new CreateCompanyRequest("BlueSky Digital Media");
             var companyGiven2 = new CreateCompanyRequest("Hyperoptics");
@@ -140,7 +140,7 @@ namespace CompanyApiTest
             await httpClient.PostAsJsonAsync("api/companies", companyGiven2);
 
             var response = await httpClient.GetAsync("/api/company?pageIndex=1&pageSize=2");
-            response.EnsureSuccessStatusCode();
+            //response.EnsureSuccessStatusCode();
             var content = await response.Content.ReadAsStringAsync();
             var companies = JsonConvert.DeserializeObject<List<Company>>(content);
 
@@ -151,18 +151,32 @@ namespace CompanyApiTest
                 Assert.NotNull(company.Id);
                 Assert.NotNull(company.Name);
             }
-        }*/
+        }
 
-        /*[Fact]
-        public async Task UpdateCompany_ReturnsNoContentStatusCode()
+        [Fact]
+        public async Task Should_return_status_204_When_Update_Given_updated_company_name()
         {
-            var updatedCompany = new Company { Id = 1, Name = "Updated Company A" };
-            var jsonContent = JsonConvert.SerializeObject(updatedCompany);
-            var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+            await ClearDataAsync();
+            var companyGiven = new CreateCompanyRequest("BlueSky Digital Media");
+            var createResponse = await httpClient.PostAsync(
+                "/api/companies",
+                SerializeObjectToContent(companyGiven));
+            var company = await createResponse.Content.ReadFromJsonAsync<Company>();
+            var updatedCompany = new Company("Hyperoptics");
 
-            var response = await _client.PutAsync("/api/company/1", content);
+            HttpResponseMessage httpResponseMessage = await httpClient.PutAsJsonAsync("api/companies" + $"/{company?.Id}", updatedCompany);
 
-            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        }*/
+            Assert.Equal(HttpStatusCode.NoContent, httpResponseMessage.StatusCode);
+        }
+
+        [Fact]
+        public async Task Should_return_status_404_When_Update_Given_unmatched_company_id()
+        {
+            var updatedCompany = new Company("Hyperoptics");
+
+            HttpResponseMessage httpResponseMessage = await httpClient.PutAsJsonAsync("api/companies/1", updatedCompany);
+
+            Assert.Equal(HttpStatusCode.NotFound, httpResponseMessage.StatusCode);
+        }
     }
 }

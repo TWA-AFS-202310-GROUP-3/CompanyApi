@@ -53,5 +53,19 @@ namespace CompanyApi.Controllers
             var companiesPage = companies.Skip(startIndex).Take(pageSize).ToList();
             return Ok(companiesPage);
         }
+
+        [HttpPut("{id}")]
+        public ActionResult<Company> Update(string id, [FromBody] Company updatedCompany)
+        {
+            var existingCompany = companies.FirstOrDefault(c => c.Id == id);
+            if (existingCompany == null)
+            {
+                return NotFound();
+            }
+
+            existingCompany.Name = updatedCompany.Name;
+
+            return NoContent();
+        }
     }
 }
