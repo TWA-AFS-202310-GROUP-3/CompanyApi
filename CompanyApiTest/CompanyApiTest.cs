@@ -85,7 +85,43 @@ namespace CompanyApiTest
             Assert.NotNull(companies);
         }
 
+        [Fact]
+        public async Task Should_return_specific_companies_with_200_When_get_Given_company_ID()
+        {
+            //Given
+            await ClearDataAsync();
+            CompanyRequest companyGiven = new CompanyRequest("West Digital Media");
+            HttpResponseMessage httpResponseMessage = await httpClient.PostAsJsonAsync(url, companyGiven);
+            Company? createdCompany = await httpResponseMessage.Content.ReadFromJsonAsync<Company>();
+            string id = createdCompany.Id;
 
+            //When
+
+            HttpResponseMessage gotCompanyMessage = await httpClient.GetAsync(url+ $"/{id}");
+            Company? gotCompany = await gotCompanyMessage.Content.ReadFromJsonAsync<Company>();
+
+            //Then
+            Assert.Equal(HttpStatusCode.OK , gotCompanyMessage.StatusCode);
+            Assert.NotNull(gotCompany);
+        }
+
+        [Fact]
+        public async Task Should_return_not_found_with_404_When_get_Given_ID()
+        {
+            //Given
+            await ClearDataAsync();
+            CompanyRequest companyGiven = new CompanyRequest("West Digital Media");
+            HttpResponseMessage httpResponseMessage = await httpClient.PostAsJsonAsync(url, companyGiven);
+            Company? createdCompany = await httpResponseMessage.Content.ReadFromJsonAsync<Company>();
+            string id = createdCompany.Id;
+
+            //When
+            string fakeURL = $"{url}/99";
+            HttpResponseMessage gotCompanyMessage = await httpClient.GetAsync(fakeURL);
+
+            //Then
+            Assert.Equal(HttpStatusCode.NotFound, gotCompanyMessage.StatusCode);
+        }
 
         private async Task<T?> DeserializeTo<T>(HttpResponseMessage httpResponseMessage)
         {
