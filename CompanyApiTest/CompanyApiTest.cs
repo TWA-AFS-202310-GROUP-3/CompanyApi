@@ -23,7 +23,7 @@ namespace CompanyApiTest
         {
             // Given
             await ClearDataAsync();
-            Company companyGiven = new Company("BlueSky Digital Media");
+            CreateCompanyRequest companyGiven = new CreateCompanyRequest("BlueSky Digital Media");
             
             // When
             HttpResponseMessage httpResponseMessage = await httpClient.PostAsync(
@@ -44,7 +44,7 @@ namespace CompanyApiTest
         {
             // Given
             await ClearDataAsync();
-            Company companyGiven = new Company("BlueSky Digital Media");
+            CreateCompanyRequest companyGiven = new CreateCompanyRequest("BlueSky Digital Media");
 
             // When
             await httpClient.PostAsync("/api/companies", SerializeObjectToContent(companyGiven));
@@ -75,7 +75,7 @@ namespace CompanyApiTest
         {
             // Given
             await ClearDataAsync();
-            Company companyGiven = new Company("BlueSky Digital Media");
+            CreateCompanyRequest companyGiven = new CreateCompanyRequest("BlueSky Digital Media");
             await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
 
             // When
@@ -93,7 +93,7 @@ namespace CompanyApiTest
         {
             // Given
             await ClearDataAsync();
-            Company companyGiven = new Company("BlueSky Digital Media");
+            CreateCompanyRequest companyGiven = new CreateCompanyRequest("BlueSky Digital Media");
             HttpResponseMessage createHttpResponseMessage = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
             Company? companyCreated = await createHttpResponseMessage.Content.ReadFromJsonAsync<Company>();
 
@@ -127,7 +127,7 @@ namespace CompanyApiTest
         {
             // Given
             await ClearDataAsync();
-            Company companyGiven = new Company("BlueSky Digital Media");
+            CreateCompanyRequest companyGiven = new CreateCompanyRequest("BlueSky Digital Media");
             HttpResponseMessage createHttpResponseMessage = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
             Company? companyCreated = await createHttpResponseMessage.Content.ReadFromJsonAsync<Company>();
 
@@ -148,7 +148,7 @@ namespace CompanyApiTest
         {
             // Given
             await ClearDataAsync();
-            Company companyGiven = new Company("BlueSky Digital Media");
+            CreateCompanyRequest companyGiven = new CreateCompanyRequest("BlueSky Digital Media");
             HttpResponseMessage createHttpResponseMessage = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
             Company? companyCreated = await createHttpResponseMessage.Content.ReadFromJsonAsync<Company>();
 
