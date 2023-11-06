@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 
 namespace CompanyApi.Controllers
 {
@@ -22,8 +23,35 @@ namespace CompanyApi.Controllers
 
         [HttpDelete]
         public void ClearData()
-        { 
+        {
             companies.Clear();
+        }
+
+        [HttpGet]
+        public ActionResult<List<Company>> GetAll()
+        {
+            return Ok(companies);
+        }
+
+        [HttpGet("{id}")]
+        public ActionResult<Company> Get(string id)
+        {
+            foreach (var company in companies.Where(company => company.Id.Equals(id)))
+            {
+                return Ok(company);
+            }
+
+            return NotFound();
+        }
+
+        [HttpPut("{id}")]
+        public ActionResult<Company> Update(string id, CreateCompanyRequest companyRequest)
+        {
+            foreach (var company in companies.Where(company => company.Id.Equals(id)))
+            {
+                company.Name = companyRequest.Name;
+            }
+            return NotFound();
         }
     }
 }
