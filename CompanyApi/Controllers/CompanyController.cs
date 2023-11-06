@@ -27,11 +27,11 @@ namespace CompanyApi.Controllers
             companies.Clear();
         }
 
-        [HttpGet]
-        public ActionResult<List<Company>> GetAll()
-        {
-            return Ok(companies);
-        }
+        //[HttpGet]
+        //public ActionResult<List<Company>> GetAll()
+        //{
+        //    return Ok(companies);
+        //}
 
         [HttpGet("{id}")]
         public ActionResult<Company> Get(string id)
@@ -43,6 +43,18 @@ namespace CompanyApi.Controllers
 
             return NotFound();
         }
+
+        [HttpGet]
+        public ActionResult<List<Company>> GetInPage([FromQuery] int? pageSize, [FromQuery] int? pageIndex)
+        {
+            if (pageIndex == null||pageSize == null)
+            {
+                return Ok(companies);
+            }
+            List<Company> companiesInPage = companies.Skip(((int)pageIndex -1)* (int)pageSize).Take((int)pageSize).ToList();
+            return Ok(companiesInPage);
+        }
+
 
         [HttpPut("{id}")]
         public ActionResult<Company> Update(string id, CreateCompanyRequest companyRequest)

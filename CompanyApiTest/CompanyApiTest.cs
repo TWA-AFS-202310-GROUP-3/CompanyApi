@@ -122,12 +122,25 @@ namespace CompanyApiTest
         [Fact]
         public async Task Should_return_company_list_with_statuscode_200_when_get_companies_with_paging()
         {
+            // Given
             await ClearDataAsync();
-            CreateCompanyRequest companyGiven1 = new CreateCompanyRequest() { Name = "BlueSky Digital Media" };
-            CreateCompanyRequest companyGiven2 = new CreateCompanyRequest() { Name = "BlueSky Digital Media" };
-            await httpClient.PostAsJsonAsync("/api/companies", companyGiven1);
-            await httpClient.PostAsJsonAsync("/api/companies", companyGiven2);
+            for (int i = 0; i < 10; i++)
+            {
+                CreateCompanyRequest companyGiven = new CreateCompanyRequest() { Name = $"BlueSky Digital Media{i+1}" };
+                await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            }
 
+            int pageSize = 2;
+            int pageIndex = 3;
+            
+            // When
+            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync($"/api/companies/?pageSize={pageSize}&pageIndex={pageIndex}");
+
+            // Then
+            Assert.Equal(HttpStatusCode.OK, httpResponseMessage.StatusCode);
+            List<Company> resultPage = await httpResponseMessage.Content.ReadFromJsonAsync<List<Company>>();
+            Assert.Equal("BlueSky Digital Media5", resultPage[0].Name);
+            Assert.Equal("BlueSky Digital Media6", resultPage[1].Name);
         }
 
         [Fact]
