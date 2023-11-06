@@ -9,7 +9,19 @@ namespace CompanyApi.Controllers
     {
         private static List<Company> companies = new List<Company>();
 
-        [HttpPost("{companyId}/empoyees")]
+        [HttpDelete("{companyId}/employees/{employeeId}")]
+        public ActionResult DeleteEmployee(string companyId, string employeeId)
+        {
+            var company = companies.Find(company => company.Id == companyId);
+            var employee = company?.Employees.Find(employee => employee.Id == employeeId);
+            if (employee == null)
+            {
+                return NotFound();
+            }
+            company?.Employees.Remove(employee);
+            return NoContent();
+        }
+        [HttpPost("{companyId}/employees")]
         public ActionResult<Employee> AddEmployee(string companyId, EmployeeRequest newEmployee)
         {
             var company = companies.Find(company => company.Id == companyId);

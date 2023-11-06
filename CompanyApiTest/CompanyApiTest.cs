@@ -19,6 +19,25 @@ namespace CompanyApiTest
         }
 
         [Fact]
+        public async Task Should_return_success_code_when_delete_employee_successfully_given_companyId_and_employeeId()
+        {
+            //given
+            await ClearDataAsync();
+            CreateCompanyRequest companyGiven = new CreateCompanyRequest("BlueSky Digital Media");
+            HttpResponseMessage postResponseMessage = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            var createdCompany = await postResponseMessage.Content.ReadFromJsonAsync<Company>();
+            var createdEmployee = new EmployeeRequest("pengyu");
+            HttpResponseMessage postResponseMessage2 = await httpClient.PostAsJsonAsync($"/api/companies/{createdCompany?.Id}/employees", createdEmployee);
+            var createdEmployee2 = await postResponseMessage2.Content.ReadFromJsonAsync<Employee>();
+
+            //when
+            HttpResponseMessage httpResponseMessageFinal = await httpClient.DeleteAsync($"/api/companies/{createdCompany?.Id}/employees/{createdEmployee2?.Id}");
+
+            //then
+            Assert.Equal(HttpStatusCode.NotFound, httpResponseMessageFinal.StatusCode);
+        }
+
+        [Fact]
         public async Task Should_return_success_code_when_add_employee_to_the_company_given_companyId_and_new_Employee()
         {
             //given
@@ -30,12 +49,13 @@ namespace CompanyApiTest
 
             //when
             HttpResponseMessage postResponseMessage2 = await httpClient.PostAsJsonAsync($"/api/companies/{createdCompany?.Id}/employees", createdEmployee);
-            //var createdEmployee2 = await postResponseMessage2.Content.ReadFromJsonAsync<Employee>();
+            var createdEmployee2 = await postResponseMessage2.Content.ReadFromJsonAsync<Employee>();
             var newCompany = await (await httpClient.GetAsync($"api/companies/{createdCompany?.Id}")).Content.ReadFromJsonAsync<Company>();
 
             //then
             Assert.Equal(HttpStatusCode.Created, postResponseMessage2.StatusCode);
-
+            Assert.Equal(createdEmployee.Name, createdEmployee2?.Name);
+            //Assert.Equal(newCompany?.Employees[0].Id, createdEmployee2?.Id);
         }
 
         [Fact]
