@@ -164,6 +164,51 @@ namespace CompanyApiTest
             Assert.Equal(HttpStatusCode.NotFound, putHttpResponseMessage.StatusCode);
         }
 
+        [Fact]
+        public async Task Should_return_companies_with_status_200_when_get_company_given_page_and_index()
+        {
+            // Given
+            await ClearDataAsync();
+            await httpClient.PostAsJsonAsync("/api/companies", new CreateCompanyRequest("1"));
+            await httpClient.PostAsJsonAsync("/api/companies", new CreateCompanyRequest("2"));
+            await httpClient.PostAsJsonAsync("/api/companies", new CreateCompanyRequest("3"));
+            await httpClient.PostAsJsonAsync("/api/companies", new CreateCompanyRequest("4"));
+            int pageIndex = 2;
+            int pageSize = 2;
+            string url = $"/api/companies?pageSize={pageSize}&pageIndex={pageIndex}";
+
+            // When
+            HttpResponseMessage getHttpResponseMessage = await httpClient.GetAsync(url);
+
+            // Then
+            Assert.Equal(HttpStatusCode.OK, getHttpResponseMessage.StatusCode);
+            List<Company>? companies = await getHttpResponseMessage.Content.ReadFromJsonAsync<List<Company>>();
+            Assert.NotNull(companies);
+            Assert.Equal("3", companies[0].Name);
+            Assert.Equal("4", companies[1].Name);
+        }
+
+        [Fact]
+        public async Task Should_return_status_204_when_get_company_given_page_and_index_out_of_range()
+        {
+            // Given
+            await ClearDataAsync();
+            await httpClient.PostAsJsonAsync("/api/companies", new CreateCompanyRequest("1"));
+            await httpClient.PostAsJsonAsync("/api/companies", new CreateCompanyRequest("2"));
+            await httpClient.PostAsJsonAsync("/api/companies", new CreateCompanyRequest("3"));
+            await httpClient.PostAsJsonAsync("/api/companies", new CreateCompanyRequest("4"));
+            int pageIndex = 2;
+            int pageSize = 3;
+            string url = $"/api/companies?pageSize={pageSize}&pageIndex={pageIndex}";
+
+            // When
+            HttpResponseMessage getHttpResponseMessage = await httpClient.GetAsync(url);
+
+            // Then
+            Assert.Equal(HttpStatusCode.NoContent, getHttpResponseMessage.StatusCode);
+        }
+
+
         private async Task<T?> DeserializeTo<T>(HttpResponseMessage httpResponseMessage)
         {
             string response = await httpResponseMessage.Content.ReadAsStringAsync();

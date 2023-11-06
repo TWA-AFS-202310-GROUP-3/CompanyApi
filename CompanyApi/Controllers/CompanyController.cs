@@ -22,9 +22,19 @@ namespace CompanyApi.Controllers
         }
 
         [HttpGet]
-        public ActionResult<List<Company>> GetAllCompanies()
+        public ActionResult<List<Company>> GetAllCompanies([FromQuery] int? pageSize, [FromQuery] int? pageIndex)
         {
-            return StatusCode(StatusCodes.Status200OK, companies);
+            if (pageIndex ==null || pageSize ==null)
+            {
+                return StatusCode(StatusCodes.Status200OK, companies);
+            }
+
+            if ((pageIndex * pageSize) > companies.Count())
+            {
+                return StatusCode(StatusCodes.Status204NoContent);
+            }
+            var ressultCompanies = companies.Skip((int)((pageIndex - 1) * pageSize)).Take((int)pageSize).ToList();
+            return StatusCode(StatusCodes.Status200OK, ressultCompanies);
         }
 
 
@@ -50,6 +60,17 @@ namespace CompanyApi.Controllers
             company.Name = request.Name;
             return StatusCode(StatusCodes.Status200OK, company);
         }
+
+        //[HttpGet]
+        //public ActionResult<List<Company>> GetPagingCompany([FromQuery] int pageSize, [FromQuery] int pageIndex)
+        //{
+        //    if ((pageIndex * pageSize) > companies.Count())
+        //    {
+        //        return StatusCode(StatusCodes.Status204NoContent);
+        //    }
+        //    var ressultCompanies = companies.Skip(pageIndex-1 * pageSize).Take(pageSize).ToList();
+        //    return StatusCode(StatusCodes.Status200OK, ressultCompanies);
+        //}
 
         [HttpDelete]
         public void ClearData()
