@@ -59,3 +59,52 @@ Content-Type: application/json; charset=utf-8
 ### Case2: 404 Company NOT Found
 
 ######################################################################################
+## AC6 Add an employee to a specific company 
+POST https://{{hostname}}:{{port}}/api/Companies/{companyID}
+Content-Type: application/json; charset=utf-8
+
+{
+  "Name": Tom
+}
+### Response: 
+### Case1: Created Success, Return employee created with Status Created( 201 )
+### Case2:  Employee Name Exsiting, Return 400 Bad request
+### Case3:  404 company not found
+### Case4:  Bad Request (invalid request body)
+
+######################################################################################
+## AC7 Delete an employee from a specific company 
+DELETE https://{{hostname}}:{{port}}/api/Companies/{companyID}/employees/{employeeID}
+
+### Response: 
+### Case1: Sucess, 204 NO Content
+### Case2: 404 NOT Found(Wrong Employee id)
+### Case3: 404 NOT Found(Wrong Company id)
+
+######################################################################################
+## AC8 Get all employees from a specific company 
+GET https://{{hostname}}:{{port}}/api/Companies/{companyID}/employees
+
+### Response: OK 200 with List of Employees
+
+######################################################################################
+## AC9 Update the information of a specific employee from a certain company 
+PUT https://{{hostname}}:{{port}}/api/Companies/{companyID}/employees/{employeeID}
+Content-Type: application/json; charset=utf-8
+
+{
+  "name": Jim
+}
+### Response: 
+### Case1: Sucess, 204 NO Content
+### Case2: 404 Company NOT Found
+
+######################################################################################
+## AC10 Delete a specific company and remove all the employee.
+DELETE https://{{hostname}}:{{port}}/api/Companies/{companyID}
+
+### Response: 
+### Case1: Sucess, 204 NO Content
+### Case2: 404 Company NOT Found
+
+######################################################################################

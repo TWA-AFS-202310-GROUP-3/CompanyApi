@@ -2,6 +2,9 @@ using CompanyApi;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Newtonsoft.Json;
 using System.Net;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace CompanyApiTest
@@ -21,17 +24,14 @@ namespace CompanyApiTest
         {
             // Given
             await ClearDataAsync();
-            Company companyGiven = new Company("BlueSky Digital Media");
-            
+            CreateCompanyRequest companyGiven = new CreateCompanyRequest() { Name = "BlueSky Digital Media" };
+
             // When
-            HttpResponseMessage httpResponseMessage = await httpClient.PostAsync(
-                "/api/companies", 
-                SerializeObjectToContent(companyGiven)
-            );
+            HttpResponseMessage httpResponseMessage = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
            
             // Then
             Assert.Equal(HttpStatusCode.Created, httpResponseMessage.StatusCode);
-            Company? companyCreated = await DeserializeTo<Company>(httpResponseMessage);
+            Company? companyCreated = await httpResponseMessage.Content.ReadFromJsonAsync<Company>();
             Assert.NotNull(companyCreated);
             Assert.NotNull(companyCreated.Id);
             Assert.Equal(companyGiven.Name, companyCreated.Name);
@@ -42,14 +42,12 @@ namespace CompanyApiTest
         {
             // Given
             await ClearDataAsync();
-            Company companyGiven = new Company("BlueSky Digital Media");
+            CreateCompanyRequest companyGiven = new CreateCompanyRequest() { Name = "BlueSky Digital Media" };
+            await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
 
             // When
-            await httpClient.PostAsync("/api/companies", SerializeObjectToContent(companyGiven));
-            HttpResponseMessage httpResponseMessage = await httpClient.PostAsync(
-                "/api/companies", 
-                SerializeObjectToContent(companyGiven)
-            );
+            HttpResponseMessage httpResponseMessage = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+
             // Then
             Assert.Equal(HttpStatusCode.BadRequest, httpResponseMessage.StatusCode);
         }
@@ -68,21 +66,249 @@ namespace CompanyApiTest
             Assert.Equal(HttpStatusCode.BadRequest, httpResponseMessage.StatusCode);
         }
 
-        private async Task<T?> DeserializeTo<T>(HttpResponseMessage httpResponseMessage)
-        {
-            string response = await httpResponseMessage.Content.ReadAsStringAsync();
-            T? deserializedObject = JsonConvert.DeserializeObject<T>(response);
-            return deserializedObject;
-        }
-
-        private static StringContent SerializeObjectToContent<T>(T objectGiven)
-        {
-            return new StringContent(JsonConvert.SerializeObject(objectGiven), Encoding.UTF8, "application/json");
-        }
-
         private async Task ClearDataAsync()
         {
             await httpClient.DeleteAsync("/api/companies");
+        }
+
+        [Fact]
+        public async Task Should_return_company_list_with_statuscode_200_when_get_given_without_company_id()
+        {
+            // Given 
+            await ClearDataAsync();
+            // When 
+            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync("/api/companies");
+            // Then
+            Assert.Equal(HttpStatusCode.OK, httpResponseMessage.StatusCode);
+            Assert.Equal(new List<Company>(), await httpResponseMessage.Content.ReadFromJsonAsync<List<Company>>());
+        }
+
+        [Fact]
+        public async Task Should_return_a_company_with_statuscode_200_when_get_given_company_id()
+        {
+            // Given
+            await ClearDataAsync();
+            Company companyGiven = new Company("BlueSky Digital Media");
+            HttpResponseMessage message = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            Company company = await message.Content.ReadFromJsonAsync<Company>();
+            string targetId = company.Id;
+            // When
+            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync($"/api/companies/{targetId}" );
+            var gotCompany = await httpResponseMessage.Content.ReadFromJsonAsync<Company>();
+            // Then
+            Assert.Equal(HttpStatusCode.Created, message.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, httpResponseMessage.StatusCode);
+
+            Assert.Equal(companyGiven.Name, gotCompany.Name);
+        }
+
+        [Fact]
+        public async Task Should_return_not_found_when_get_given_not_existing_id()
+        {
+            // Given
+            await ClearDataAsync();
+            CreateCompanyRequest companyGiven = new CreateCompanyRequest() { Name = "BlueSky Digital Media" };
+            HttpResponseMessage message = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            var deletedId = message.Content.ReadFromJsonAsync<Company>().Id.ToString();
+            await httpClient.DeleteAsync(deletedId);
+            // When 
+            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync($"/api/companies/{deletedId}");
+
+            //Then
+            Assert.Equal(HttpStatusCode.NotFound, httpResponseMessage.StatusCode);
+
+        }
+
+        [Fact]
+        public async Task Should_return_company_list_with_statuscode_200_when_get_companies_with_paging()
+        {
+            // Given
+            await ClearDataAsync();
+            for (int i = 0; i < 10; i++)
+            {
+                CreateCompanyRequest companyGiven = new CreateCompanyRequest() { Name = $"BlueSky Digital Media{i+1}" };
+                await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            }
+
+            int pageSize = 2;
+            int pageIndex = 3;
+            
+            // When
+            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync($"/api/companies/?pageSize={pageSize}&pageIndex={pageIndex}");
+
+            // Then
+            Assert.Equal(HttpStatusCode.OK, httpResponseMessage.StatusCode);
+            List<Company> resultPage = await httpResponseMessage.Content.ReadFromJsonAsync<List<Company>>();
+            Assert.Equal("BlueSky Digital Media5", resultPage[0].Name);
+            Assert.Equal("BlueSky Digital Media6", resultPage[1].Name);
+        }
+
+        [Fact]
+        public async Task Should_return_not_found_when_update_given_invalid_id()
+        {
+            // Given
+            await ClearDataAsync();
+            CreateCompanyRequest companyGiven = new CreateCompanyRequest() { Name = "BlueSky Digital Media" };
+            HttpResponseMessage message = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            var deletedId = message.Content.ReadFromJsonAsync<Company>().Id.ToString();
+            await httpClient.DeleteAsync(deletedId);
+            CreateCompanyRequest companyToUpdate = new CreateCompanyRequest() { Name = "BlueSky Digital Media" };
+
+            // When
+            HttpResponseMessage httpResponseMessage = await httpClient.PutAsJsonAsync($"/api/companies/{deletedId}", companyToUpdate);
+
+            // Then
+            Assert.Equal(HttpStatusCode.NotFound, httpResponseMessage.StatusCode);
+        }
+
+        [Fact]
+        public async Task Should_return_NoContent_204_when_update_given_valid_id_and_content_to_update()
+        {
+            // Given
+            await ClearDataAsync();
+            CreateCompanyRequest companyGiven = new CreateCompanyRequest() { Name = "BlueSky Digital Media" };
+            HttpResponseMessage message = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            Company company = await message.Content.ReadFromJsonAsync<Company>();
+            string targetId = company.Id;
+            CreateCompanyRequest companyToUpdate = new CreateCompanyRequest() { Name = "New Name" };
+
+            // When
+            HttpResponseMessage httpResponseMessage = await httpClient.PutAsJsonAsync($"/api/companies/{targetId}", companyToUpdate);
+
+            // Then
+            Assert.Equal(HttpStatusCode.NoContent, httpResponseMessage.StatusCode);
+            HttpResponseMessage updatedMessage = await httpClient.GetAsync($"/api/companies/{targetId}");
+            var updatedCompany = await updatedMessage.Content.ReadFromJsonAsync<Company>();
+            Assert.Equal(companyToUpdate.Name, updatedCompany.Name);
+        }
+
+        [Fact]
+        public async Task Should_return_created_employee_with_status_201_when_add_employee_to_company_given_a_company_and_employee()
+        {
+            // Given
+            await ClearDataAsync();
+            CreateCompanyRequest companyGiven = new CreateCompanyRequest() { Name = "BlueSky Digital Media" };
+            HttpResponseMessage message = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            var company = await message.Content.ReadFromJsonAsync<Company>();
+            string companyId = company.Id;
+            CreateEmployeeRequest employeeGiven = new CreateEmployeeRequest() { Name = "Tom" };
+            // When
+            HttpResponseMessage httpResponseMessage = await httpClient.PostAsJsonAsync($"/api/companies/{companyId}/employees", employeeGiven);
+            // Then
+            Assert.Equal(HttpStatusCode.Created, httpResponseMessage.StatusCode);
+            Employee? employeeCreated = await httpResponseMessage.Content.ReadFromJsonAsync<Employee>();
+            Assert.NotNull(employeeCreated);
+            Assert.NotNull(employeeCreated.Id);
+            Assert.Equal(employeeGiven.Name, employeeCreated.Name);
+        }
+
+        [Fact]
+        public async Task Should_return_bad_reqeust_when_create_employee_given_a_existed_employee_name()
+        {
+            // Given
+            await ClearDataAsync();
+            CreateCompanyRequest companyGiven = new CreateCompanyRequest() { Name = "BlueSky Digital Media" };
+            HttpResponseMessage message = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            var company = await message.Content.ReadFromJsonAsync<Company>();
+            string companyId = company.Id;
+            CreateEmployeeRequest employeeGiven = new CreateEmployeeRequest() { Name = "Tom" };
+            await httpClient.PostAsJsonAsync($"/api/companies/{companyId}/employees", employeeGiven);
+            // When
+            HttpResponseMessage httpResponseMessage = await httpClient.PostAsJsonAsync($"/api/companies/{companyId}/employees", employeeGiven);
+            // Then
+            Assert.Equal(HttpStatusCode.BadRequest, httpResponseMessage.StatusCode);
+        }
+        [Fact]
+        public async Task Should_return_bad_reqeust_when_create_employee_given_a_employee_with_unknown_field()
+        {
+            // Given
+            await ClearDataAsync();
+            CreateCompanyRequest companyGiven = new CreateCompanyRequest() { Name = "BlueSky Digital Media" };
+            HttpResponseMessage message = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            var company = await message.Content.ReadFromJsonAsync<Company>();
+            string companyId = company.Id;
+            StringContent employeeGiven = new StringContent("{\"unknownField\": \"Tim\"}", Encoding.UTF8, "application/json");
+            // When
+            HttpResponseMessage httpResponseMessage = await httpClient.PostAsync($"/api/companies/{companyId}/employees", employeeGiven);
+            
+            // Then
+            Assert.Equal(HttpStatusCode.BadRequest, httpResponseMessage.StatusCode);
+        }
+
+        [Fact]
+        public async Task Should_return_bad_reqeust_when_create_company_given_a_company_with_unknown_field2()
+        {
+            // Given
+            await ClearDataAsync();
+            CreateCompanyRequest companyGiven = new CreateCompanyRequest() { Name = "BlueSky Digital Media" };
+            HttpResponseMessage message = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            var company = await message.Content.ReadFromJsonAsync<Company>();
+            string companyId = "sfejiroew";
+            CreateEmployeeRequest employeeGiven = new CreateEmployeeRequest() { Name = "Tom" };
+            // When
+            HttpResponseMessage httpResponseMessage = await httpClient.PostAsJsonAsync($"/api/companies/{companyId}/employees", employeeGiven);
+            // Then
+            Assert.Equal(HttpStatusCode.NotFound, httpResponseMessage.StatusCode);
+        }
+
+        [Fact]
+        public async Task Should_return_204_NoContent_when_delete_employee_given_companyid_and_employeeid()
+        {
+            // Given
+            await ClearDataAsync();
+            CreateCompanyRequest companyGiven = new CreateCompanyRequest() { Name = "BlueSky Digital Media" };
+            HttpResponseMessage message = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            var company = await message.Content.ReadFromJsonAsync<Company>();
+            string companyId = company.Id;
+            CreateEmployeeRequest employeeGiven = new CreateEmployeeRequest() { Name = "Tom" };
+            HttpResponseMessage message2 = await httpClient.PostAsJsonAsync($"/api/companies/{companyId}/employees", employeeGiven);
+            var employee = await message2.Content.ReadFromJsonAsync<Employee>();
+            string employeeId = employee.Id;
+
+            // When
+            HttpResponseMessage httpResponseMessage = await httpClient.DeleteAsync($"/api/companies/{companyId}/employees/{employeeId}");
+            // Then
+            Assert.Equal(HttpStatusCode.NoContent, httpResponseMessage.StatusCode);
+        }
+
+        [Fact]
+        public async Task Should_return_404_NotFound_when_delete_employee_given_invalid_employeeid()
+        {
+            // Given
+            await ClearDataAsync();
+            CreateCompanyRequest companyGiven = new CreateCompanyRequest() { Name = "BlueSky Digital Media" };
+            HttpResponseMessage message = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            var company = await message.Content.ReadFromJsonAsync<Company>();
+            string companyId = company.Id;
+            CreateEmployeeRequest employeeGiven = new CreateEmployeeRequest() { Name = "Tom" };
+            HttpResponseMessage message2 = await httpClient.PostAsJsonAsync($"/api/companies/{companyId}/employees", employeeGiven);
+            var employee = await message2.Content.ReadFromJsonAsync<Employee>();
+            string employeeId = employee.Id;
+
+            // When
+            HttpResponseMessage httpResponseMessage = await httpClient.DeleteAsync($"/api/companies/{companyId}/employees/{employeeId+"1"}");
+            // Then
+            Assert.Equal(HttpStatusCode.NotFound, httpResponseMessage.StatusCode);
+        }
+
+        [Fact]
+        public async Task Should_return_404_NotFound_when_delete_employee_given_invalid_companyid()
+        {
+            // Given
+            await ClearDataAsync();
+            CreateCompanyRequest companyGiven = new CreateCompanyRequest() { Name = "BlueSky Digital Media" };
+            HttpResponseMessage message = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            var company = await message.Content.ReadFromJsonAsync<Company>();
+            string companyId = company.Id;
+            CreateEmployeeRequest employeeGiven = new CreateEmployeeRequest() { Name = "Tom" };
+            HttpResponseMessage message2 = await httpClient.PostAsJsonAsync($"/api/companies/{companyId}/employees", employeeGiven);
+            var employee = await message2.Content.ReadFromJsonAsync<Employee>();
+            string employeeId = employee.Id;
+
+            // When
+            HttpResponseMessage httpResponseMessage = await httpClient.DeleteAsync($"/api/companies/{companyId+"1"}/employees/{employeeId}");
+            // Then
+            Assert.Equal(HttpStatusCode.NotFound, httpResponseMessage.StatusCode);
         }
     }
 }
