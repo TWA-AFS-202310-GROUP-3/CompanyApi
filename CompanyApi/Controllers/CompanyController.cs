@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Xml.Linq;
 
 namespace CompanyApi.Controllers
 {
@@ -18,6 +19,12 @@ namespace CompanyApi.Controllers
             Company companyCreated = new Company(request.Name);
             companies.Add(companyCreated);
             return StatusCode(StatusCodes.Status201Created, companyCreated);
+        }
+
+        [HttpGet]
+        public ActionResult<List<Company>> GetAllCompanies()
+        {
+            return StatusCode(StatusCodes.Status200OK, companies);
         }
 
         [HttpDelete]

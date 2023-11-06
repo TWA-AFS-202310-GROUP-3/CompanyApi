@@ -68,6 +68,24 @@ namespace CompanyApiTest
             Assert.Equal(HttpStatusCode.BadRequest, httpResponseMessage.StatusCode);
         }
 
+        [Fact]
+        public async Task Should_return_All_Companies_with_status_200_when_Get_company_()
+        {
+            // Given
+            await ClearDataAsync();
+            Company companyGiven = new Company("BlueSky Digital Media");
+            await httpClient.PostAsync("/api/companies", SerializeObjectToContent(companyGiven));
+
+            // When
+            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync("/api/companies");
+
+            // Then
+            Assert.Equal(HttpStatusCode.OK, httpResponseMessage.StatusCode);
+            List<Company>? companies = await DeserializeTo<List<Company>>(httpResponseMessage);
+            Assert.NotNull(companies);
+            Assert.Equal(companyGiven.Name, companies[0].Name);
+        }
+
         private async Task<T?> DeserializeTo<T>(HttpResponseMessage httpResponseMessage)
         {
             string response = await httpResponseMessage.Content.ReadAsStringAsync();
