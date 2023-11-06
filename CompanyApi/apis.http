@@ -74,21 +74,22 @@ Content-Type: application/json; charset=utf-8
 
 ######################################################################################
 ## AC7 Delete an employee from a specific company 
-DELETE https://{{hostname}}:{{port}}/api/Companies/{companyID}/{employeeID}
+DELETE https://{{hostname}}:{{port}}/api/Companies/{companyID}/employees/{employeeID}
 
 ### Response: 
 ### Case1: Sucess, 204 NO Content
-### Case2: 404 Employee NOT Found
+### Case2: 404 NOT Found(Wrong Employee id)
+### Case3: 404 NOT Found(Wrong Company id)
 
 ######################################################################################
 ## AC8 Get all employees from a specific company 
-GET https://{{hostname}}:{{port}}/api/Companies/{companyID}
+GET https://{{hostname}}:{{port}}/api/Companies/{companyID}/employees
 
 ### Response: OK 200 with List of Employees
 
 ######################################################################################
 ## AC9 Update the information of a specific employee from a certain company 
-PUT https://{{hostname}}:{{port}}/api/Companies/{companyID}/{employeeID}
+PUT https://{{hostname}}:{{port}}/api/Companies/{companyID}/employees/{employeeID}
 Content-Type: application/json; charset=utf-8
 
 {

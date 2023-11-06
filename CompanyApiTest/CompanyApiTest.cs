@@ -250,5 +250,65 @@ namespace CompanyApiTest
             // Then
             Assert.Equal(HttpStatusCode.NotFound, httpResponseMessage.StatusCode);
         }
+
+        [Fact]
+        public async Task Should_return_204_NoContent_when_delete_employee_given_companyid_and_employeeid()
+        {
+            // Given
+            await ClearDataAsync();
+            CreateCompanyRequest companyGiven = new CreateCompanyRequest() { Name = "BlueSky Digital Media" };
+            HttpResponseMessage message = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            var company = await message.Content.ReadFromJsonAsync<Company>();
+            string companyId = company.Id;
+            CreateEmployeeRequest employeeGiven = new CreateEmployeeRequest() { Name = "Tom" };
+            HttpResponseMessage message2 = await httpClient.PostAsJsonAsync($"/api/companies/{companyId}/employees", employeeGiven);
+            var employee = await message2.Content.ReadFromJsonAsync<Employee>();
+            string employeeId = employee.Id;
+
+            // When
+            HttpResponseMessage httpResponseMessage = await httpClient.DeleteAsync($"/api/companies/{companyId}/employees/{employeeId}");
+            // Then
+            Assert.Equal(HttpStatusCode.NoContent, httpResponseMessage.StatusCode);
+        }
+
+        [Fact]
+        public async Task Should_return_404_NotFound_when_delete_employee_given_invalid_employeeid()
+        {
+            // Given
+            await ClearDataAsync();
+            CreateCompanyRequest companyGiven = new CreateCompanyRequest() { Name = "BlueSky Digital Media" };
+            HttpResponseMessage message = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            var company = await message.Content.ReadFromJsonAsync<Company>();
+            string companyId = company.Id;
+            CreateEmployeeRequest employeeGiven = new CreateEmployeeRequest() { Name = "Tom" };
+            HttpResponseMessage message2 = await httpClient.PostAsJsonAsync($"/api/companies/{companyId}/employees", employeeGiven);
+            var employee = await message2.Content.ReadFromJsonAsync<Employee>();
+            string employeeId = employee.Id;
+
+            // When
+            HttpResponseMessage httpResponseMessage = await httpClient.DeleteAsync($"/api/companies/{companyId}/employees/{employeeId+"1"}");
+            // Then
+            Assert.Equal(HttpStatusCode.NotFound, httpResponseMessage.StatusCode);
+        }
+
+        [Fact]
+        public async Task Should_return_404_NotFound_when_delete_employee_given_invalid_companyid()
+        {
+            // Given
+            await ClearDataAsync();
+            CreateCompanyRequest companyGiven = new CreateCompanyRequest() { Name = "BlueSky Digital Media" };
+            HttpResponseMessage message = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            var company = await message.Content.ReadFromJsonAsync<Company>();
+            string companyId = company.Id;
+            CreateEmployeeRequest employeeGiven = new CreateEmployeeRequest() { Name = "Tom" };
+            HttpResponseMessage message2 = await httpClient.PostAsJsonAsync($"/api/companies/{companyId}/employees", employeeGiven);
+            var employee = await message2.Content.ReadFromJsonAsync<Employee>();
+            string employeeId = employee.Id;
+
+            // When
+            HttpResponseMessage httpResponseMessage = await httpClient.DeleteAsync($"/api/companies/{companyId+"1"}/employees/{employeeId}");
+            // Then
+            Assert.Equal(HttpStatusCode.NotFound, httpResponseMessage.StatusCode);
+        }
     }
 }

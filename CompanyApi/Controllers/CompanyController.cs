@@ -27,12 +27,6 @@ namespace CompanyApi.Controllers
             companies.Clear();
         }
 
-        //[HttpGet]
-        //public ActionResult<List<Company>> GetAll()
-        //{
-        //    return Ok(companies);
-        //}
-
         [HttpGet("{id}")]
         public ActionResult<Company> Get(string id)
         {
@@ -83,5 +77,19 @@ namespace CompanyApi.Controllers
             return NotFound();
         }
 
+        [HttpDelete("{companyId}/employees/{employeeId}")]
+        public ActionResult DeleteEmployeeFromSpecificCompany(string companyId, string employeeId)
+        {
+
+            foreach (var (company, employee) in from company in companies
+                                                where company.Id.Equals(companyId)
+                                                from employee in company.Employees.Where(employee => employee.Id.Equals(employeeId))
+                                                select (company, employee))
+            {
+                company.Employees.Remove(employee);
+                return NoContent() ;
+            }
+            return NotFound() ;
+        }
     }
 }
