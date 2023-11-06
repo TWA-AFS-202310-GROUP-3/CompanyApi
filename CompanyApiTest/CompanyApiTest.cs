@@ -208,6 +208,57 @@ namespace CompanyApiTest
             Assert.Equal(HttpStatusCode.NoContent, getHttpResponseMessage.StatusCode);
         }
 
+        [Fact]
+        public async Task Should_return_created_employee_with_status_201_given_an_employee_and_Company()
+        {
+            // Given
+            await ClearDataAsync();
+            CreateCompanyRequest companyGiven = new CreateCompanyRequest("BlueSky Digital Media");
+            HttpResponseMessage createHttpResponseMessage = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            Company? companyCreated = await createHttpResponseMessage.Content.ReadFromJsonAsync<Company>();
+
+            // When
+            string createEmployeeUrl = $"/api/companies/{companyCreated?.Id}/employees";
+            CreateEmployeeRequest employeeRequest = new CreateEmployeeRequest("Zhang San", 10000);
+            HttpResponseMessage httpResponseMessage = await httpClient.PostAsJsonAsync(createEmployeeUrl, employeeRequest);
+            HttpResponseMessage getCompanyHttpResponseMessage = await httpClient.GetAsync($"/api/companies/{companyCreated?.Id}");
+
+            // Then
+            Assert.Equal(HttpStatusCode.Created, httpResponseMessage.StatusCode);
+            Employee? employee = await httpResponseMessage.Content.ReadFromJsonAsync<Employee>();
+            Company? company = await getCompanyHttpResponseMessage.Content.ReadFromJsonAsync<Company>();
+            Assert.NotNull(employee);
+            Assert.NotNull(employee.Id);
+            Assert.Equal(employeeRequest.Name, employee.Name);
+            Assert.Equal(employeeRequest.Salary, employee.Salary);
+            Assert.Single(company.Employees);
+        }
+
+        [Fact]
+        public async Task Should_return_created_employee_with_status_404_given_an_employee_with_Company_non_exist()
+        {
+            // Given
+            await ClearDataAsync();
+            CreateCompanyRequest companyGiven = new CreateCompanyRequest("BlueSky Digital Media");
+            HttpResponseMessage createHttpResponseMessage = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            Company? companyCreated = await createHttpResponseMessage.Content.ReadFromJsonAsync<Company>();
+
+            // When
+            string createEmployeeUrl = $"/api/companies/wrongCompanyId/employees";
+            CreateEmployeeRequest employeeRequest = new CreateEmployeeRequest("Zhang San", 10000);
+            HttpResponseMessage httpResponseMessage = await httpClient.PostAsJsonAsync(createEmployeeUrl, employeeRequest);
+            //HttpResponseMessage getCompanyHttpResponseMessage = await httpClient.GetAsync($"/api/companies/{companyCreated?.Id}");
+
+            // Then
+            Assert.Equal(HttpStatusCode.NotFound, httpResponseMessage.StatusCode);
+            //Employee? employee = await httpResponseMessage.Content.ReadFromJsonAsync<Employee>();
+            //Company? company = await httpResponseMessage.Content.ReadFromJsonAsync<Company>();
+            //Assert.NotNull(employee);
+            //Assert.NotNull(employee.Id);
+            //Assert.Equal(employeeRequest.Name, employee.Name);
+            //Assert.Equal(employeeRequest.Salary, employee.Salary);
+            //Assert.Equal(1, company.Employees.Count());
+        }
 
         private async Task<T?> DeserializeTo<T>(HttpResponseMessage httpResponseMessage)
         {

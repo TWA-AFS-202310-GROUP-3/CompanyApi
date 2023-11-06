@@ -61,16 +61,18 @@ namespace CompanyApi.Controllers
             return StatusCode(StatusCodes.Status200OK, company);
         }
 
-        //[HttpGet]
-        //public ActionResult<List<Company>> GetPagingCompany([FromQuery] int pageSize, [FromQuery] int pageIndex)
-        //{
-        //    if ((pageIndex * pageSize) > companies.Count())
-        //    {
-        //        return StatusCode(StatusCodes.Status204NoContent);
-        //    }
-        //    var ressultCompanies = companies.Skip(pageIndex-1 * pageSize).Take(pageSize).ToList();
-        //    return StatusCode(StatusCodes.Status200OK, ressultCompanies);
-        //}
+        [HttpPost("{companyId}/Employees")]
+        public ActionResult<Company> CreateEmployee(string companyId, CreateEmployeeRequest request)
+        {
+            Employee employeeCreated = new Employee(request.Name, request.Salary);
+            Company? company = companies.Find(company => company.Id == companyId);
+            if (company == null)
+            {
+                return StatusCode(StatusCodes.Status404NotFound);
+            }
+            company.Employees.Add(employeeCreated);
+            return StatusCode(StatusCodes.Status201Created, employeeCreated);
+        }
 
         [HttpDelete]
         public void ClearData()
