@@ -2,6 +2,8 @@ using CompanyApi;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Newtonsoft.Json;
 using System.Net;
+using System.Net.Http;
+using System.Net.Http.Json;
 using System.Text;
 
 namespace CompanyApiTest
@@ -83,6 +85,50 @@ namespace CompanyApiTest
         private async Task ClearDataAsync()
         {
             await httpClient.DeleteAsync("/api/companies");
+        }
+
+        [Fact]
+        public async Task Should_return_all_companies_with_status_200_when_GetAll_given_without_company_name()
+        {
+            // Given
+            await ClearDataAsync();
+            var companyGiven = new CreateCompanyRequest("BlueSky Digital Media");
+            await httpClient.PostAsJsonAsync("api/companies", companyGiven);
+
+            // When
+            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync("api/companies");
+
+            // Then
+            Assert.Equal(HttpStatusCode.OK, httpResponseMessage.StatusCode); //ok = 200
+            //Assert.Equal(companyGiven,await httpResponseMessage.Content.ReadFromJsonAsync<ListCompany>>());
+
+        }
+
+        [Fact]
+        public async Task Should_return_company_name_with_status_200_when_Get_given_company_name_and_company_exist()
+        {
+            await ClearDataAsync();
+            var companyGiven = new CreateCompanyRequest("BlueSky Digital Media");
+            var createResponse = await httpClient.PostAsync(
+                "/api/companies",
+                SerializeObjectToContent(companyGiven));
+            var company = await createResponse.Content.ReadFromJsonAsync<Company>();
+            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync("api/companies" + $"/{company?.Id}");
+            var companyGet = await httpResponseMessage.Content.ReadFromJsonAsync<Company>();
+
+            // Then
+            Assert.Equal(company?.Id, companyGet?.Id);
+            Assert.Equal(HttpStatusCode.OK, httpResponseMessage.StatusCode);
+        }
+
+        [Fact]
+        public async Task Should_return_status_404_when_Get_given_company_name_and_company_do_not_exist()
+        {
+            await ClearDataAsync();
+
+            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync("api/companies/blueSky Digital Media");
+
+            Assert.Equal(HttpStatusCode.NotFound, httpResponseMessage.StatusCode); //NotFound = 404
         }
     }
 }
