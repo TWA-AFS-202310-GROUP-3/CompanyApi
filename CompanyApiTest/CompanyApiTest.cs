@@ -2,6 +2,7 @@ using CompanyApi;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Newtonsoft.Json;
 using System.Net;
+using System.Net.Http.Json;
 using System.Text;
 
 namespace CompanyApiTest
@@ -67,6 +68,59 @@ namespace CompanyApiTest
             // Then
             Assert.Equal(HttpStatusCode.BadRequest, httpResponseMessage.StatusCode);
         }
+
+        [Fact]
+        public async Task Should_return_all_companies_list_when_get_all_companies()
+        {
+            // Given
+            await ClearDataAsync();
+            Company companyGiven = new Company("slb");
+            await httpClient.PostAsJsonAsync("/api/companies",companyGiven);
+
+            // When
+            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync("/api/companies");
+            var result = await httpResponseMessage.Content.ReadFromJsonAsync<List<Company>>();
+
+            // Then
+            Assert.Equal(HttpStatusCode.OK, httpResponseMessage.StatusCode);
+            Assert.Equal(companyGiven.Name, result[0].Name);
+        }
+
+        [Fact]
+        public async Task Should_return_exist_company_when_get_the_exist_companies_given_company_name()
+        {
+            // Given
+            await ClearDataAsync();
+            Company companyGiven = new Company("slb");
+            HttpResponseMessage postResponseMessage =  await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            var createdCompany = await postResponseMessage.Content.ReadFromJsonAsync<Company>();
+
+            // When
+            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync($"/api/companies/{createdCompany.Id}");
+            var result = await httpResponseMessage.Content.ReadFromJsonAsync<Company>();
+
+            // Then
+            Assert.Equal(HttpStatusCode.OK, httpResponseMessage.StatusCode);
+            Assert.Equal(companyGiven.Name, result.Name);
+        }
+
+        [Fact]
+        public async Task Should_return_bad_resquest_when_get_the_exist_companies_given_not_exist_company_name()
+        {
+            // Given
+            await ClearDataAsync();
+            //Company companyGiven = new Company("slb");
+            string nonExistentCompanyId = "nonexistent-id";
+
+            // When
+            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync($"/api/companies/{nonExistentCompanyId}");
+            //var result = await httpResponseMessage.Content.ReadFromJsonAsync<Company>();
+
+            // Then
+            Assert.Equal(HttpStatusCode.NotFound, httpResponseMessage.StatusCode);
+            //Assert.Equal(companyGiven.Name, result.Name);
+        }
+
 
         private async Task<T?> DeserializeTo<T>(HttpResponseMessage httpResponseMessage)
         {

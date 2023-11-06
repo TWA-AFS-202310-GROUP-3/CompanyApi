@@ -20,6 +20,23 @@ namespace CompanyApi.Controllers
             return StatusCode(StatusCodes.Status201Created, companyCreated);
         }
 
+        [HttpGet]
+        public ActionResult<List<Company>> GetAll()
+        {
+            return companies;
+        }
+
+        [HttpGet("{id}")]
+        public ActionResult<Company> GetById(string id) 
+        {
+            var company = companies.Find(company => company.Id == id);
+            if (company == null)
+            {
+                return NotFound();
+            }
+            return Ok(company);
+        }
+
         [HttpDelete]
         public void ClearData()
         { 
