@@ -59,3 +59,17 @@ Content-Type: application/json; charset=utf-8
 ### Case2: 404 Company NOT Found
 
 ######################################################################################
+
+## AC6 Add Employee to Company 
+PUT https://{{hostname}}:{{port}}/api/Companies/{companyID}/Employee/{employeeID}
+Content-Type: application/json; charset=utf-8
+
+{
+  "name": Zhang San,
+  "salary": 10000
+}
+### Response: 
+### Case1: Sucess with the employee created
+### Case2: 404 Company NOT Found
+
+# ######################################################################################
