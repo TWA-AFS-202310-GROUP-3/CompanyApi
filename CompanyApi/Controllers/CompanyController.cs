@@ -20,6 +20,12 @@ namespace CompanyApi.Controllers
             return StatusCode(StatusCodes.Status201Created, companyCreated);
         }
 
+        [HttpGet]
+        public ActionResult<List<Company>> GetALLCompanies()
+        {
+            return Ok(companies);
+        }
+
         [HttpDelete]
         public void ClearData()
         { 
