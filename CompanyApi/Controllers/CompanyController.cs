@@ -27,6 +27,30 @@ namespace CompanyApi.Controllers
             return StatusCode(StatusCodes.Status200OK, companies);
         }
 
+
+        [HttpGet("{id}")]
+        public ActionResult<Company> GetCompany(string id)
+        {
+            var company = companies.Find(company => company.Id.Equals(id));
+            if (company == null)
+            {
+                return StatusCode(StatusCodes.Status404NotFound);
+            }
+            return StatusCode(StatusCodes.Status200OK, company);
+        }
+
+        //[HttpPut("{id}")]
+        //public ActionResult<Company> UpdateCompany(string id, CreateCompanyRequest request)
+        //{
+        //    var company = companies.Find(company => company.Id.Equals(id));
+        //    if (company == null)
+        //    {
+        //        return NotFound();
+        //    }
+        //    company.Name = request.Name;
+        //    return company;
+        //}
+
         [HttpDelete]
         public void ClearData()
         { 

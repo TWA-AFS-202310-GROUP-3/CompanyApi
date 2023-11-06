@@ -2,6 +2,7 @@ using CompanyApi;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Newtonsoft.Json;
 using System.Net;
+using System.Net.Http.Json;
 using System.Text;
 
 namespace CompanyApiTest
@@ -69,21 +70,56 @@ namespace CompanyApiTest
         }
 
         [Fact]
-        public async Task Should_return_All_Companies_with_status_200_when_Get_company_()
+        public async Task Should_return_All_Companies_with_status_200_when_get_company()
         {
             // Given
             await ClearDataAsync();
             Company companyGiven = new Company("BlueSky Digital Media");
-            await httpClient.PostAsync("/api/companies", SerializeObjectToContent(companyGiven));
+            await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
 
             // When
             HttpResponseMessage httpResponseMessage = await httpClient.GetAsync("/api/companies");
 
             // Then
             Assert.Equal(HttpStatusCode.OK, httpResponseMessage.StatusCode);
-            List<Company>? companies = await DeserializeTo<List<Company>>(httpResponseMessage);
+            List<Company>? companies = await httpResponseMessage.Content.ReadFromJsonAsync<List<Company>>();
             Assert.NotNull(companies);
             Assert.Equal(companyGiven.Name, companies[0].Name);
+        }
+
+        [Fact]
+        public async Task Should_return_company_with_status_200_when_get_company_given_a_company_id()
+        {
+            // Given
+            await ClearDataAsync();
+            Company companyGiven = new Company("BlueSky Digital Media");
+            HttpResponseMessage createHttpResponseMessage = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            Company? companyCreated = await createHttpResponseMessage.Content.ReadFromJsonAsync<Company>();
+
+            // When
+            HttpResponseMessage getHttpResponseMessage = await httpClient.GetAsync(
+                $"/api/companies/{companyCreated?.Id}");
+
+            // Then
+            Assert.Equal(HttpStatusCode.OK, getHttpResponseMessage.StatusCode);
+            Company? companyRetrived = await getHttpResponseMessage.Content.ReadFromJsonAsync<Company>();
+            Assert.NotNull(companyRetrived);
+            Assert.Equal(companyGiven.Name, companyRetrived.Name);
+        }
+
+        [Fact]
+        public async Task Should_return_404_when_get_company_given_a_non_exist_company_id()
+        {
+            // Given
+            await ClearDataAsync();
+            Company companyGiven = new Company("BlueSky Digital Media");
+
+            // When
+            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync(
+                $"/api/companies/{companyGiven.Id}");
+
+            // Then
+            Assert.Equal(HttpStatusCode.NotFound, httpResponseMessage.StatusCode);
         }
 
         private async Task<T?> DeserializeTo<T>(HttpResponseMessage httpResponseMessage)
