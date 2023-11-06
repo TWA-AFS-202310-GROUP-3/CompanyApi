@@ -50,6 +50,7 @@ namespace CompanyApi.Controllers
             foreach (var company in companies.Where(company => company.Id.Equals(id)))
             {
                 company.Name = companyRequest.Name;
+                return NoContent();
             }
             return NotFound();
         }
