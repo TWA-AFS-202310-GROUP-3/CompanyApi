@@ -9,6 +9,18 @@ namespace CompanyApi.Controllers
     {
         private static List<Company> companies = new List<Company>();
 
+        [HttpPost("{companyId}/empoyees")]
+        public ActionResult<Employee> AddEmployee(string companyId, EmployeeRequest newEmployee)
+        {
+            var company = companies.Find(company => company.Id == companyId);
+            if (company == null)
+            {
+                return NotFound();
+            }
+            Employee newComer = new Employee(newEmployee.Name);
+            return Created("", newComer);
+        }
+
         [HttpPut("{id}")]
         public ActionResult<Company> Put(string id, CreateCompanyRequest company)
         {

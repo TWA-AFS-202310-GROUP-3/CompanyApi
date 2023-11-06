@@ -19,6 +19,26 @@ namespace CompanyApiTest
         }
 
         [Fact]
+        public async Task Should_return_success_code_when_add_employee_to_the_company_given_companyId_and_new_Employee()
+        {
+            //given
+            await ClearDataAsync();
+            CreateCompanyRequest companyGiven = new CreateCompanyRequest("BlueSky Digital Media");
+            HttpResponseMessage postResponseMessage = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            var createdCompany = await postResponseMessage.Content.ReadFromJsonAsync<Company>();
+            var createdEmployee = new EmployeeRequest("pengyu");
+
+            //when
+            HttpResponseMessage postResponseMessage2 = await httpClient.PostAsJsonAsync($"/api/companies/{createdCompany?.Id}/employees", createdEmployee);
+            //var createdEmployee2 = await postResponseMessage2.Content.ReadFromJsonAsync<Employee>();
+            var newCompany = await (await httpClient.GetAsync($"api/companies/{createdCompany?.Id}")).Content.ReadFromJsonAsync<Company>();
+
+            //then
+            Assert.Equal(HttpStatusCode.Created, postResponseMessage2.StatusCode);
+
+        }
+
+        [Fact]
         public async Task Should_return_all_companies_in_one_page_when_given_pageSize_and_pageIndex()
         {
             //given
@@ -34,8 +54,8 @@ namespace CompanyApiTest
             List<Company>? companies = await httpResponseMessage.Content.ReadFromJsonAsync<List<Company>>();
 
             //then
-            Assert.Equal("BlueSky Digital Media4", companies[0].Name);
-            Assert.Equal(2, companies.Count);
+            Assert.Equal("BlueSky Digital Media4", companies?[0].Name);
+            Assert.Equal(2, companies?.Count);
         }
 
         [Fact]
