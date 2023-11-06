@@ -20,10 +20,25 @@ namespace CompanyApi.Controllers
             return StatusCode(StatusCodes.Status201Created, companyCreated);
         }
 
-        [HttpGet]
+        [HttpGet("all")]
         public ActionResult<List<Company>> GetAll()
         {
             return companies;
+        }
+
+        [HttpGet]
+        public ActionResult<List<Company>> GetAllByIndex([FromQuery] int pageSize = 0, [FromQuery] int pageIndex = 1)
+        {
+            if (pageSize <= 0 || pageIndex <= 0)
+            {
+                return BadRequest();
+            }
+
+            var startIndex = (pageIndex - 1) * pageSize;
+            var pagedCompanies = companies.Skip(startIndex).Take(pageSize).ToList();
+
+            return Ok(pagedCompanies);
+            //return companies;
         }
 
         [HttpGet("{id}")]

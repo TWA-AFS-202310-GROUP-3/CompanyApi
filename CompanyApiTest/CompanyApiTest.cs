@@ -78,7 +78,7 @@ namespace CompanyApiTest
             await httpClient.PostAsJsonAsync("/api/companies",companyGiven);
 
             // When
-            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync("/api/companies");
+            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync("/api/companies/all");
             var result = await httpResponseMessage.Content.ReadFromJsonAsync<List<Company>>();
 
             // Then
@@ -121,6 +121,52 @@ namespace CompanyApiTest
             //Assert.Equal(companyGiven.Name, result.Name);
         }
 
+        [Fact]
+        public async Task Should_return_X_companies_starting_from_Y_index_when_give_x_and_y()
+        {
+            // Given
+            await ClearDataAsync();
+            Company companyGiven1 = new Company("slb");
+            Company companyGiven2 = new Company("slb1");
+            Company companyGiven3 = new Company("slb2");
+            Company companyGiven4 = new Company("slb3");
+            Company companyGiven5 = new Company("slb4");
+            List<Company> companies = new List<Company> { companyGiven1, companyGiven2, companyGiven3, companyGiven4, companyGiven5};
+            await AddCompaniesAsync(companies);
+
+            int pageSize = 2;
+            int pageIndex = 2;
+            //When
+            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync($"/api/companies?pageSize={pageSize}&pageIndex={pageIndex}");
+            var result = await httpResponseMessage.Content.ReadFromJsonAsync<List<Company>>();
+            //Then
+            Assert.Equal(HttpStatusCode.OK, httpResponseMessage.StatusCode);
+            Assert.Equal(pageSize, result.Count);
+            Assert.Equal(companyGiven3.Name, result[0].Name);
+            Assert.Equal(companyGiven4.Name, result[1].Name);
+        }
+
+        [Fact]
+        public async Task Should_return_bad_request_when_give_x_or_y_wrong()
+        {
+            // Given
+            await ClearDataAsync();
+            Company companyGiven1 = new Company("slb");
+            Company companyGiven2 = new Company("slb1");
+            Company companyGiven3 = new Company("slb2");
+            Company companyGiven4 = new Company("slb3");
+            Company companyGiven5 = new Company("slb4");
+            List<Company> companies = new List<Company> { companyGiven1, companyGiven2, companyGiven3, companyGiven4, companyGiven5 };
+            await AddCompaniesAsync(companies);
+
+            int pageSize = -2;
+            int pageIndex = -1;
+            //When
+            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync($"/api/companies?pageSize={pageSize}&pageIndex={pageIndex}");
+            //Then
+            Assert.Equal(HttpStatusCode.BadRequest, httpResponseMessage.StatusCode);
+        }
+
 
         private async Task<T?> DeserializeTo<T>(HttpResponseMessage httpResponseMessage)
         {
@@ -137,6 +183,15 @@ namespace CompanyApiTest
         private async Task ClearDataAsync()
         {
             await httpClient.DeleteAsync("/api/companies");
+        }
+
+        private async Task AddCompaniesAsync(List<Company> companies)
+        {
+            foreach (var company in companies)
+            {
+                HttpResponseMessage postResponse = await httpClient.PostAsJsonAsync("/api/companies", company);
+                postResponse.EnsureSuccessStatusCode();
+            }
         }
     }
 }
