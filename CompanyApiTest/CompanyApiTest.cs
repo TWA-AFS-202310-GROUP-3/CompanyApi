@@ -185,7 +185,52 @@ namespace CompanyApiTest
 
             //Then
             Assert.Equal(HttpStatusCode.NotFound, putResponse.StatusCode);
+         
         }
+
+        [Fact]
+        public async Task Should_return_new_comer_with_status_201_when_add_employ_given_employ_name()
+        {
+            // Given
+            await ClearDataAsync();
+            EmployeeRequest newComer = new EmployeeRequest("Wang Ke");
+            string company = "Google";
+            CompanyRequest companyGiven = new CompanyRequest(company);
+            HttpResponseMessage httpResponseMessage = await httpClient.PostAsJsonAsync(url, companyGiven);
+            Company createdCompany = await httpResponseMessage.Content.ReadFromJsonAsync<Company>();
+            string id = createdCompany.Id;
+            string postNewCommerUrl = url + $"/{id}";
+
+            // When
+            HttpResponseMessage httpResponseMessage_newCommer = await httpClient.PostAsJsonAsync(postNewCommerUrl, newComer);
+            var newEmployee = await httpResponseMessage_newCommer.Content.ReadFromJsonAsync<Employee>();
+
+            // Then
+            Assert.Equal(HttpStatusCode.Created, httpResponseMessage_newCommer.StatusCode);
+            Assert.Equal("Wang Ke", newEmployee.Name);
+            Assert.Equal(HttpStatusCode.Created, httpResponseMessage.StatusCode);
+            Company? companyCreated = await DeserializeTo<Company>(httpResponseMessage);
+            Assert.NotNull(companyCreated);
+            Assert.NotNull(companyCreated.Id);
+            Assert.Equal(companyGiven.Name, companyCreated.Name);
+        }
+
+        /* [Fact]
+         public async Task Should_return_bad_reqeust_when_create_company_given_a_existed_company_name()
+         {
+             // Given
+             await ClearDataAsync();
+             Company companyGiven = new Company("BlueSky Digital Media");
+
+             // When
+             await httpClient.PostAsync("/api/companies", SerializeObjectToContent(companyGiven));
+             HttpResponseMessage httpResponseMessage = await httpClient.PostAsync(
+                 "/api/companies",
+                 SerializeObjectToContent(companyGiven)
+             );
+             // Then
+             Assert.Equal(HttpStatusCode.BadRequest, httpResponseMessage.StatusCode);
+         }*/
 
         private async Task<T?> DeserializeTo<T>(HttpResponseMessage httpResponseMessage)
         {

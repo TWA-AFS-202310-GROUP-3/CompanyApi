@@ -9,7 +9,7 @@ namespace CompanyApi.Controllers
         private static List<Company> companies = new List<Company>();
 
         [HttpPost]
-        public ActionResult<Company> Create(CompanyRequest request)
+        public ActionResult<Company> Create([FromBody] CompanyRequest request)
         {
             if (companies.Exists(company => company.Name.Equals(request.Name)))
             {
@@ -50,17 +50,24 @@ namespace CompanyApi.Controllers
         [HttpPut("{id}")]
         public ActionResult<Company> PutCompany (string id, [FromBody] Company updateCompay)
         {
-            bool isNotFound = false;
             var existingCompany = companies.Find(company => company.Id == id);
             if (existingCompany == null)
             {
-                isNotFound = true;
-            } else
-            {
-                existingCompany.Name = updateCompay.Name;
-            }
+                return NotFound($"The item with id {id} does not exist.");
+            } 
+            existingCompany.Name = updateCompay.Name;
 
-            return isNotFound ? NotFound($"The item with id {id} does not exist.") : existingCompany;
+            return existingCompany;
+        }
+
+        [HttpPost("{company_id}")]
+        public ActionResult<Employee> CreateEmployee([FromBody] EmployeeRequest newCommer,string company_id)
+        {
+            bool isNotFound = false;
+            var theCompanyToJoin = companies.Find(company => company.Id == company_id);
+            Employee newEmployee = new Employee(newCommer.Name);
+
+            return theCompanyToJoin == null ? NotFound($"The company with id {company_id} does not exist.") : Created("", newEmployee);
         }
 
         [HttpDelete]
