@@ -18,6 +18,37 @@ namespace CompanyApiTest
         }
 
         [Fact]
+         public async Task Should_return_correct_company_when_send_a_company_id()
+        {
+            //given
+            await ClearDataAsync();
+            Company companyGiven = new Company("BlueSky Digital Media");
+            HttpResponseMessage postResponseMessage = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            var createdCompany = await postResponseMessage.Content.ReadFromJsonAsync<Company>();
+
+            //when
+            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync($"/api/companies/{createdCompany?.Id}");
+            var response = await httpResponseMessage.Content.ReadFromJsonAsync<Company>();
+
+            //then
+            Assert.Equal(HttpStatusCode.OK, httpResponseMessage.StatusCode);
+            Assert.Equal(companyGiven.Name, response?.Name);
+        }
+
+        [Fact]
+        public async Task Should_return_bad_reqeust_when_request_company_given_an_unexisted_company_id()
+        {
+            //given
+            await ClearDataAsync();
+
+            // When
+            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync($"/api/companies/unexistedcompany");
+
+            // Then
+            Assert.Equal(HttpStatusCode.NotFound, httpResponseMessage.StatusCode);
+        }
+
+        [Fact]
         public async Task Should_return_all_companies_when_given_no_company_id()
         {
             //given
@@ -31,7 +62,7 @@ namespace CompanyApiTest
 
             //then
             Assert.Equal(HttpStatusCode.OK, httpResponseMessage.StatusCode);
-            Assert.Equal(companyGiven.Name, response[0].Name);
+            Assert.Equal(companyGiven.Name, response?[0].Name);
         }
 
         [Fact]

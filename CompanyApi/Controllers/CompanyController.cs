@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 
 namespace CompanyApi.Controllers
 {
@@ -12,6 +13,17 @@ namespace CompanyApi.Controllers
         public ActionResult<List<Company>> Get()
         {
             return Ok(companies);
+        }
+
+        [HttpGet("{id}")]
+        public ActionResult<Company> Get(string id)
+        {
+            var company = companies.Find(company => company.Id == id);
+            if (company == null) 
+            {
+                return NotFound();
+            }
+            return Ok(company);
         }
         [HttpPost]
         public ActionResult<Company> Create(CreateCompanyRequest request)
