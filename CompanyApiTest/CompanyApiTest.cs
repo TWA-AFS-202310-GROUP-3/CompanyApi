@@ -19,6 +19,26 @@ namespace CompanyApiTest
         }
 
         [Fact]
+        public async Task Should_return_all_companies_in_one_page_when_given_pageSize_and_pageIndex()
+        {
+            //given
+            await ClearDataAsync();
+            for (int i = 0; i < 10; i++)
+            {
+                CreateCompanyRequest companyGiven = new CreateCompanyRequest($"BlueSky Digital Media{i}");
+                await httpClient.PostAsJsonAsync("api/companies", companyGiven);
+            }
+
+            //when
+            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync($"api/companies?pageSize=2&pageIndex=3");
+            List<Company>? companies = await httpResponseMessage.Content.ReadFromJsonAsync<List<Company>>();
+
+            //then
+            Assert.Equal("BlueSky Digital Media4", companies[0].Name);
+            Assert.Equal(2, companies.Count);
+        }
+
+        [Fact]
         public async Task Should_return_success_code_when_update_successfully_given_existed_company()
         {
             //given
@@ -28,7 +48,7 @@ namespace CompanyApiTest
             HttpResponseMessage postResponseMessage = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
             var createdCompany = await postResponseMessage.Content.ReadFromJsonAsync<Company>();
 
-            //whenw
+            //when
             HttpResponseMessage postResponseMessage2 = await httpClient.PutAsJsonAsync($"/api/companies/{createdCompany?.Id}", newCompany);
 
             //then

@@ -22,9 +22,21 @@ namespace CompanyApi.Controllers
         }
 
         [HttpGet]
-        public ActionResult<List<Company>> Get()
+        public ActionResult<List<Company>> Get(int? pageSize, int? pageIndex)
         {
-            return Ok(companies);
+            if (pageSize == null || pageIndex == null)
+            {
+                return Ok(companies);
+            }
+            List<Company> companiesInOnePage = new List<Company>();
+            int beginIndex = (int)((pageIndex - 1) * pageSize);
+            int i = 0;
+            while (i < pageSize && (i + beginIndex) < companies.Count)
+            {
+                companiesInOnePage.Add(companies[beginIndex + i]);
+                i++;
+            }
+            return Ok(companiesInOnePage);
         }
 
         [HttpGet("{id}")]
