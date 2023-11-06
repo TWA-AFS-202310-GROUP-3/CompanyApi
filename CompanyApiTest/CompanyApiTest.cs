@@ -252,6 +252,69 @@ namespace CompanyApiTest
             Assert.Equal(HttpStatusCode.NotFound, httpResponseMessage.StatusCode);
         }
 
+        [Fact]
+        public async Task Should_return_status_204_when_delete_employee_success()
+        {
+            // Given
+            await ClearDataAsync();
+            CreateCompanyRequest companyGiven = new CreateCompanyRequest("BlueSky Digital Media");
+            HttpResponseMessage createCompantResMsg = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            Company? companyCreated = await createCompantResMsg.Content.ReadFromJsonAsync<Company>();
+            string employeeUrl = $"/api/companies/{companyCreated?.Id}/employees";
+            CreateEmployeeRequest employeeRequest = new CreateEmployeeRequest("Zhang San", 10000);
+            HttpResponseMessage createEmployeeResMsg = await httpClient.PostAsJsonAsync(employeeUrl, employeeRequest);
+
+            // When
+            Employee? employee = await createEmployeeResMsg.Content.ReadFromJsonAsync<Employee>();
+            HttpResponseMessage deleteEmployeeResMsg = await httpClient.DeleteAsync(employeeUrl + $"/{employee?.Id}");
+            HttpResponseMessage getCompantResMsg = await httpClient.GetAsync($"/api/companies/{companyCreated?.Id}");
+            Company? company = await getCompantResMsg.Content.ReadFromJsonAsync<Company>();
+
+            // Then
+            Assert.Equal(HttpStatusCode.NoContent, deleteEmployeeResMsg.StatusCode);
+            Assert.Equal(0, company?.Employees.Count());
+        }
+
+        [Fact]
+        public async Task Should_return_status_404_when_delete_employee_given_wrong_employeeId()
+        {
+            // Given
+            await ClearDataAsync();
+            CreateCompanyRequest companyGiven = new CreateCompanyRequest("BlueSky Digital Media");
+            HttpResponseMessage createCompantResMsg = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            Company? companyCreated = await createCompantResMsg.Content.ReadFromJsonAsync<Company>();
+            string employeeUrl = $"/api/companies/{companyCreated?.Id}/employees";
+            CreateEmployeeRequest employeeRequest = new CreateEmployeeRequest("Zhang San", 10000);
+            HttpResponseMessage createEmployeeResMsg = await httpClient.PostAsJsonAsync(employeeUrl, employeeRequest);
+
+            // When
+            Employee? employee = await createEmployeeResMsg.Content.ReadFromJsonAsync<Employee>();
+            HttpResponseMessage deleteEmployeeResMsg = await httpClient.DeleteAsync(employeeUrl + $"/wrongEmployeeId");
+
+            // Then
+            Assert.Equal(HttpStatusCode.NotFound, deleteEmployeeResMsg.StatusCode);
+        }
+
+        [Fact]
+        public async Task Should_return_status_404_when_delete_employee_given_wrong_companyId()
+        {
+            // Given
+            await ClearDataAsync();
+            CreateCompanyRequest companyGiven = new CreateCompanyRequest("BlueSky Digital Media");
+            HttpResponseMessage createCompantResMsg = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            Company? companyCreated = await createCompantResMsg.Content.ReadFromJsonAsync<Company>();
+            string employeeUrl = $"/api/companies/{companyCreated?.Id}/employees";
+            CreateEmployeeRequest employeeRequest = new CreateEmployeeRequest("Zhang San", 10000);
+            HttpResponseMessage createEmployeeResMsg = await httpClient.PostAsJsonAsync(employeeUrl, employeeRequest);
+
+            // When
+            Employee? employee = await createEmployeeResMsg.Content.ReadFromJsonAsync<Employee>();
+            HttpResponseMessage deleteEmployeeResMsg = await httpClient.DeleteAsync($"/api/companies/wrongCompanyId/employees/{employee.Id}");
+
+            // Then
+            Assert.Equal(HttpStatusCode.NotFound, deleteEmployeeResMsg.StatusCode);
+        }
+
         private async Task<T?> DeserializeTo<T>(HttpResponseMessage httpResponseMessage)
         {
             string response = await httpResponseMessage.Content.ReadAsStringAsync();

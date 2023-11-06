@@ -24,7 +24,7 @@ namespace CompanyApi.Controllers
         [HttpGet]
         public ActionResult<List<Company>> GetAllCompanies([FromQuery] int? pageSize, [FromQuery] int? pageIndex)
         {
-            if (pageIndex ==null || pageSize ==null)
+            if (pageIndex == null || pageSize == null)
             {
                 return StatusCode(StatusCodes.Status200OK, companies);
             }
@@ -61,7 +61,7 @@ namespace CompanyApi.Controllers
             return StatusCode(StatusCodes.Status200OK, company);
         }
 
-        [HttpPost("{companyId}/Employees")]
+        [HttpPost("{companyId}/employees")]
         public ActionResult<Company> CreateEmployee(string companyId, CreateEmployeeRequest request)
         {
             Employee employeeCreated = new Employee(request.Name, request.Salary);
@@ -72,6 +72,22 @@ namespace CompanyApi.Controllers
             }
             company.Employees.Add(employeeCreated);
             return StatusCode(StatusCodes.Status201Created, employeeCreated);
+        }
+
+        [HttpDelete("{companyId}/employees/{employeeId}")]
+        public ActionResult DeleteEmployee(string companyId, string employeeId)
+        {
+            Company? company = companies.Find(company => companyId.Equals(company.Id));
+            if (company != null)
+            {
+                Employee? employee = company.Employees.Find(employee => employeeId.Equals(employee.Id));
+                if (employee != null)
+                {
+                    company.Employees.Remove(employee);
+                    return StatusCode(StatusCodes.Status204NoContent);
+                }
+            }
+            return StatusCode(StatusCodes.Status404NotFound);
         }
 
         [HttpDelete]

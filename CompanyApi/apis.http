@@ -61,7 +61,7 @@ Content-Type: application/json; charset=utf-8
 ######################################################################################
 
 ## AC6 Add Employee to Company 
-PUT https://{{hostname}}:{{port}}/api/Companies/{companyID}/Employee/{employeeID}
+POST https://{{hostname}}:{{port}}/api/Companies/{companyID}/Employee/{employeeID}
 Content-Type: application/json; charset=utf-8
 
 {
@@ -71,5 +71,16 @@ Content-Type: application/json; charset=utf-8
 ### Response: 
 ### Case1: Sucess with the employee created
 ### Case2: 404 Company NOT Found
+
+# ######################################################################################
+
+## AC7 Delete Employee under Company 
+DELETE https://{{hostname}}:{{port}}/api/Companies/{companyID}/Employee/{employeeID}
+Content-Type: application/json; charset=utf-8
+
+### Response: 
+### Case1: Sucess with 204 No Content
+### Case2: 404 Company NOT Found
+### Case3: 404 Employee Not Found
 
 # ######################################################################################
