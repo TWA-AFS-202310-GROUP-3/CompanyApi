@@ -82,7 +82,7 @@ namespace CompanyApi.Controllers
             return Ok(employee);
         }
 
-        /*[HttpDelete("employees/{employeeId}")]
+        [HttpDelete("{companyId}/employees/{employeeId}")]
         public ActionResult<Company> DeleteEmployee(string companyId, string employeeId)
         {
             var company = companies.Find(c => c.Id == companyId);
@@ -91,15 +91,15 @@ namespace CompanyApi.Controllers
                 return NotFound();
             }
 
-            var employee = company.Employees.FirstOrDefault(e => e.Id == employeeId);
+            var employee = company.Employees.Find(e => e.Id == employeeId);
             if (employee == null)
             {
-                return NotFound("Employee not found");
+                return NotFound();
             }
 
             company.Employees.Remove(employee);
 
-            return NoContent();
-        }*/
+            return NoContent(); //bc delete doesnt return anything
+        }
     }
 }

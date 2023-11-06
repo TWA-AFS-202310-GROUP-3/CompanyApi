@@ -185,7 +185,6 @@ namespace CompanyApiTest
                 SerializeObjectToContent(companyGiven));
             var company = await createResponse.Content.ReadFromJsonAsync<Company>();
             var newEmployee = new Employee("Erika");
-            company.Employees.Add(newEmployee);
 
             var httpResponseMessage = await httpClient.PostAsJsonAsync($"api/companies/{company.Id}/employees", newEmployee);
 
@@ -195,6 +194,43 @@ namespace CompanyApiTest
             Assert.Equal(HttpStatusCode.OK, httpResponseMessage.StatusCode);
         }
 
+        [Fact]
+        public async Task Should_delete_specific_employee_when_DeleteEmployee_Given_employeeId_and_companyId()
+        {
+            await ClearDataAsync();
+            // create a company
+            var companyGiven = new CreateCompanyRequest("BlueSky Digital Media");
+            var createResponse = await httpClient.PostAsync(
+                "/api/companies",
+                SerializeObjectToContent(companyGiven));
+            var company = await createResponse.Content.ReadFromJsonAsync<Company>();
+
+            //create a employee of this company
+            var newEmployee = new Employee("Erika");
+            company.Employees.Add(newEmployee);
+            var httpResponseMessage = await httpClient.PostAsJsonAsync($"api/companies/{company.Id}/employees", newEmployee);
+            Employee? employee = await httpResponseMessage.Content.ReadFromJsonAsync<Employee>();
+
+            //delete employee
+            var response = await httpClient.DeleteAsync($"api/companies/{company.Id}/employees/{employee.Id}");
+
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Should_return_status_404_when_DeleteEmployee_Given_employeeId_not_valid()
+        {
+            await ClearDataAsync();
+            var companyGiven = new CreateCompanyRequest("BlueSky Digital Media");
+            var createResponse = await httpClient.PostAsync(
+                "/api/companies",
+                SerializeObjectToContent(companyGiven));
+            var company = await createResponse.Content.ReadFromJsonAsync<Company>();
+
+            var response = await httpClient.DeleteAsync($"api/companies/{company.Id}/employees/1");
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
         
     }
 }
