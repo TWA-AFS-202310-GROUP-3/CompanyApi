@@ -130,5 +130,39 @@ namespace CompanyApiTest
 
             Assert.Equal(HttpStatusCode.NotFound, httpResponseMessage.StatusCode); //NotFound = 404
         }
+
+        [Fact]
+        /*public async Task Should_Returns_Correct_PageSize_and_PageIndex_when_GetCompanies_Given_PageSize_and_PageIndex()
+        {
+            var companyGiven1 = new CreateCompanyRequest("BlueSky Digital Media");
+            var companyGiven2 = new CreateCompanyRequest("Hyperoptics");
+            await httpClient.PostAsJsonAsync("api/companies", companyGiven1);
+            await httpClient.PostAsJsonAsync("api/companies", companyGiven2);
+
+            var response = await httpClient.GetAsync("/api/company?pageIndex=1&pageSize=2");
+            response.EnsureSuccessStatusCode();
+            var content = await response.Content.ReadAsStringAsync();
+            var companies = JsonConvert.DeserializeObject<List<Company>>(content);
+
+            Assert.Equal(2, companies.Count);
+
+            foreach (var company in companies)
+            {
+                Assert.NotNull(company.Id);
+                Assert.NotNull(company.Name);
+            }
+        }*/
+
+        /*[Fact]
+        public async Task UpdateCompany_ReturnsNoContentStatusCode()
+        {
+            var updatedCompany = new Company { Id = 1, Name = "Updated Company A" };
+            var jsonContent = JsonConvert.SerializeObject(updatedCompany);
+            var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+            var response = await _client.PutAsync("/api/company/1", content);
+
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        }*/
     }
 }

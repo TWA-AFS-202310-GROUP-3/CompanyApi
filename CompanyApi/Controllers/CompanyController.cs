@@ -45,5 +45,13 @@ namespace CompanyApi.Controllers
 
             return NotFound();
         }
+
+        [HttpGet]
+        public ActionResult<List<Company>> GetCompanies(int pageSize, int pageIndex)
+        {
+            var startIndex = (pageIndex - 1) * pageSize;
+            var companiesPage = companies.Skip(startIndex).Take(pageSize).ToList();
+            return Ok(companiesPage);
+        }
     }
 }
