@@ -63,11 +63,28 @@ namespace CompanyApi.Controllers
         [HttpPost("{company_id}")]
         public ActionResult<Employee> CreateEmployee([FromBody] EmployeeRequest newCommer,string company_id)
         {
-            bool isNotFound = false;
             var theCompanyToJoin = companies.Find(company => company.Id == company_id);
             Employee newEmployee = new Employee(newCommer.Name);
 
             return theCompanyToJoin == null ? NotFound($"The company with id {company_id} does not exist.") : Created("", newEmployee);
+        }
+
+        [HttpDelete("{company_id}/{employee_id}")]
+        public ActionResult<Employee> DeleteEmployee(string company_id, string employee_id)
+        {
+            return NoContent();
+         /*   var theCompanyJoined = companies.Find(company => company.Id == company_id);
+            if (theCompanyJoined == null)
+            {
+                return NotFound($"The company with id {company_id} does not exist.");
+            }
+            Employee employeeToGo = theCompanyJoined.Employees.Find(e => e.Id == employee_id);
+            if (employeeToGo == null)
+            {
+                return NotFound($"The employee with id {employee_id} does not exist");
+            }
+            theCompanyJoined.Employees.Remove(employeeToGo);
+            return NoContent();*/
         }
 
         [HttpDelete]

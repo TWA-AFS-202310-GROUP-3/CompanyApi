@@ -215,22 +215,35 @@ namespace CompanyApiTest
             Assert.Equal(companyGiven.Name, companyCreated.Name);
         }
 
-        /* [Fact]
-         public async Task Should_return_bad_reqeust_when_create_company_given_a_existed_company_name()
-         {
-             // Given
-             await ClearDataAsync();
-             Company companyGiven = new Company("BlueSky Digital Media");
+        [Fact]
+        public async Task Should_return_no_found_When_delete_employ_given_company_id_employ_id()
+        {
+            // Given
+            await ClearDataAsync();
+            EmployeeRequest newComer = new EmployeeRequest("Wang Ke");
+            string company = "Google";
+            CompanyRequest companyGiven = new CompanyRequest(company);
+            HttpResponseMessage httpResponseMessage = await httpClient.PostAsJsonAsync(url, companyGiven);
+            Company createdCompany = await httpResponseMessage.Content.ReadFromJsonAsync<Company>();
+            string id = createdCompany.Id;
+            string postNewCommerUrl = url + $"/{id}";
+            HttpResponseMessage httpResponseMessage_newCommer = await httpClient.PostAsJsonAsync(postNewCommerUrl, newComer);
+            var newEmployee = await httpResponseMessage_newCommer.Content.ReadFromJsonAsync<Employee>();
+            string employId = newEmployee.Id;
+            string deletEmployUrl = postNewCommerUrl + $"/{employId}";
 
-             // When
-             await httpClient.PostAsync("/api/companies", SerializeObjectToContent(companyGiven));
-             HttpResponseMessage httpResponseMessage = await httpClient.PostAsync(
-                 "/api/companies",
-                 SerializeObjectToContent(companyGiven)
-             );
-             // Then
-             Assert.Equal(HttpStatusCode.BadRequest, httpResponseMessage.StatusCode);
-         }*/
+            // When
+            HttpResponseMessage httpResponseMessage_deleteEmployee = await httpClient.DeleteAsync(deletEmployUrl);
+
+
+            // Then
+            Assert.Equal(HttpStatusCode.NoContent, httpResponseMessage_deleteEmployee.StatusCode);
+
+
+
+        }
+
+
 
         private async Task<T?> DeserializeTo<T>(HttpResponseMessage httpResponseMessage)
         {
