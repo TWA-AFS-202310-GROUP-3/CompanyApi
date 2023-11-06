@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 
 namespace CompanyApi.Controllers
 {
@@ -8,6 +9,70 @@ namespace CompanyApi.Controllers
     {
         private static List<Company> companies = new List<Company>();
 
+        [HttpDelete("{companyId}/employees/{employeeId}")]
+        public ActionResult DeleteEmployee(string companyId, string employeeId)
+        {
+            var company = companies.Find(company => company.Id == companyId);
+            var employee = company?.Employees.Find(employee => employee.Id == employeeId);
+            if (employee == null)
+            {
+                return NotFound();
+            }
+            company?.Employees.Remove(employee);
+            return NoContent();
+        }
+        [HttpPost("{companyId}/employees")]
+        public ActionResult<Employee> AddEmployee(string companyId, EmployeeRequest newEmployee)
+        {
+            var company = companies.Find(company => company.Id == companyId);
+            if (company == null)
+            {
+                return NotFound();
+            }
+            Employee newComer = new Employee(newEmployee.Name);
+            return Created("", newComer);
+        }
+
+        [HttpPut("{id}")]
+        public ActionResult<Company> Put(string id, CreateCompanyRequest company)
+        {
+            var previousCompany = companies.Find(company => company.Id == id);
+            if (previousCompany == null)
+            {
+                return NotFound();
+            }
+            previousCompany.Name = company.Name;
+            return NoContent();
+        }
+
+        [HttpGet]
+        public ActionResult<List<Company>> Get(int? pageSize, int? pageIndex)
+        {
+            if (pageSize == null || pageIndex == null)
+            {
+                return Ok(companies);
+            }
+            List<Company> companiesInOnePage = new List<Company>();
+            int beginIndex = (int)((pageIndex - 1) * pageSize);
+            int i = 0;
+            while (i < pageSize && (i + beginIndex) < companies.Count)
+            {
+                companiesInOnePage.Add(companies[beginIndex + i]);
+                i++;
+            }
+            return Ok(companiesInOnePage);
+        }
+
+        [HttpGet("{id}")]
+        public ActionResult<Company> Get(string id)
+        {
+            var company = companies.Find(company => company.Id == id);
+            if (company == null) 
+            {
+                return NotFound();
+            }
+            return Ok(company);
+        }
         [HttpPost]
         public ActionResult<Company> Create(CreateCompanyRequest request)
         {
