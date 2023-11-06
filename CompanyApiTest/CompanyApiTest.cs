@@ -66,18 +66,6 @@ namespace CompanyApiTest
             Assert.Equal(HttpStatusCode.BadRequest, httpResponseMessage.StatusCode);
         }
 
-        private async Task<T?> DeserializeTo<T>(HttpResponseMessage httpResponseMessage)
-        {
-            string response = await httpResponseMessage.Content.ReadAsStringAsync();
-            T? deserializedObject = JsonConvert.DeserializeObject<T>(response);
-            return deserializedObject;
-        }
-
-        private static StringContent SerializeObjectToContent<T>(T objectGiven)
-        {
-            return new StringContent(JsonConvert.SerializeObject(objectGiven), Encoding.UTF8, "application/json");
-        }
-
         private async Task ClearDataAsync()
         {
             await httpClient.DeleteAsync("/api/companies");
@@ -103,8 +91,9 @@ namespace CompanyApiTest
             Company companyGiven = new Company("BlueSky Digital Media");
             HttpResponseMessage httpResponseMessage = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
             Company company = await httpResponseMessage.Content.ReadFromJsonAsync<Company>();
+            string targetId = company.Id;
             // When
-            HttpResponseMessage httpResponseMessage2 = await httpClient.GetAsync($"/api/companies/{company.Id}" );
+            HttpResponseMessage httpResponseMessage2 = await httpClient.GetAsync($"/api/companies/{targetId}" );
 
             // Then
             Assert.Equal(HttpStatusCode.Created, httpResponseMessage.StatusCode);
@@ -115,13 +104,13 @@ namespace CompanyApiTest
         [Fact]
         public async Task Should_return_not_found_when_get_given_not_existing_id()
         {
-            string fakeId = "i7deh92mf";
             // Given
             await ClearDataAsync();
-            CreateCompanyRequest companyGiven = new CreateCompanyRequest() { Name = "BlueSky Digital Media" };  //SHOULD use CreateCompanyRequest
-            await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            CreateCompanyRequest companyGiven = new CreateCompanyRequest() { Name = "BlueSky Digital Media" };
+            HttpResponseMessage message = await httpClient.PostAsJsonAsync("/api/companies", companyGiven);
+            var deletedId = message.Content.ReadFromJsonAsync<Company>().Id.ToString();
             // When 
-            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync($"/api/companies/{fakeId}");
+            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync($"/api/companies/{deletedId}");
 
             //Then
             Assert.Equal(HttpStatusCode.NotFound, httpResponseMessage.StatusCode);
