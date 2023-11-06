@@ -188,6 +188,37 @@ namespace CompanyApiTest
             Assert.Equal(updatedName, updatedCompany.Name);
         }
 
+        [Fact]
+        public async Task Should_add_employee_to_specific_company()
+        {
+            // Given
+            Company companyGiven = new Company("slb");
+            HttpResponseMessage httpResponseMessage = await httpClient.PostAsJsonAsync("/api/companies",companyGiven);
+            Company companyCreated = await httpResponseMessage.Content.ReadFromJsonAsync<Company>();
+            Employee employeeGiven = new Employee("xianke");
+
+            // When
+            httpResponseMessage = await httpClient.PostAsJsonAsync($"/api/companies/{companyCreated?.Id}/employees", employeeGiven);
+            Employee employeeCreated = await httpResponseMessage.Content.ReadFromJsonAsync<Employee>();
+
+            // Then
+            Assert.Equal(HttpStatusCode.Created, httpResponseMessage.StatusCode);
+            Assert.Equal(employeeGiven.Name, employeeCreated.Name);
+        }
+
+        [Fact]
+        public async Task Should_return_bad_reqeust_when_add_to_specific_employee_given_wrong_company()
+        {
+            // Given
+            Employee employeeGiven = new Employee("xianke");
+
+            // When
+            var httpResponseMessage = await httpClient.PostAsJsonAsync($"/api/companies/{new Guid()}/employees", employeeGiven);
+            Employee? employeeCreated = await httpResponseMessage.Content.ReadFromJsonAsync<Employee>();
+
+            // Then
+            Assert.Equal(HttpStatusCode.BadRequest, httpResponseMessage.StatusCode);
+        }
 
         private async Task<T?> DeserializeTo<T>(HttpResponseMessage httpResponseMessage)
         {
@@ -206,11 +237,11 @@ namespace CompanyApiTest
             await httpClient.DeleteAsync("/api/companies");
         }
 
-        private async Task AddCompanyAsync(Company company)
-        {
-            HttpResponseMessage postResponse = await httpClient.PostAsJsonAsync("/api/companies", company);
-            postResponse.EnsureSuccessStatusCode();
-        }
+        //private async Task AddCompanyAsync(Company company)
+        //{
+        //    HttpResponseMessage postResponse = await httpClient.PostAsJsonAsync("/api/companies", company);
+        //    postResponse.EnsureSuccessStatusCode();
+        //}
 
         private async Task AddCompaniesAsync(List<Company> companies)
         {
