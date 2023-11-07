@@ -199,7 +199,7 @@ namespace CompanyApiTest
             HttpResponseMessage httpResponseMessage = await httpClient.PostAsJsonAsync(url, companyGiven);
             Company createdCompany = await httpResponseMessage.Content.ReadFromJsonAsync<Company>();
             string id = createdCompany.Id;
-            string postNewCommerUrl = url + $"/{id}";
+            string postNewCommerUrl = url + $"/{id}/employees";
 
             // When
             HttpResponseMessage httpResponseMessage_newCommer = await httpClient.PostAsJsonAsync(postNewCommerUrl, newComer);
@@ -226,7 +226,7 @@ namespace CompanyApiTest
             HttpResponseMessage httpResponseMessage = await httpClient.PostAsJsonAsync(url, companyGiven);
             Company createdCompany = await httpResponseMessage.Content.ReadFromJsonAsync<Company>();
             string id = createdCompany.Id;
-            string postNewCommerUrl = url + $"/{id}";
+            string postNewCommerUrl = url + $"/{id}/employees";
             HttpResponseMessage httpResponseMessage_newCommer = await httpClient.PostAsJsonAsync(postNewCommerUrl, newComer);
             var newEmployee = await httpResponseMessage_newCommer.Content.ReadFromJsonAsync<Employee>();
             string employId = newEmployee.Id;

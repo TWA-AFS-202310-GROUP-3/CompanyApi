@@ -60,7 +60,7 @@ namespace CompanyApi.Controllers
             return existingCompany;
         }
 
-        [HttpPost("{company_id}")]
+        [HttpPost("{company_id}/employees")]
         public ActionResult<Employee> CreateEmployee([FromBody] EmployeeRequest newCommer,string company_id)
         {
             var theCompanyToJoin = companies.Find(company => company.Id == company_id);
@@ -70,7 +70,7 @@ namespace CompanyApi.Controllers
             return theCompanyToJoin == null ? NotFound($"The company with id {company_id} does not exist.") : Created("", newEmployee);
         }
 
-        [HttpDelete("{company_id}/{employee_id}")]
+        [HttpDelete("{company_id}/employees/{employee_id}")]
         public ActionResult<Employee> DeleteEmployee(string company_id, string employee_id)
         {
 
