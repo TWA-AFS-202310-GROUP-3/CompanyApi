@@ -16,7 +16,6 @@ Content-Type: application/json; charset=utf-8
 
 {
     "Name": "SLB",
-    "Employees": []
 }
 ## Response 
 ### 1.Created, Return the Company created with Status Created ( 201 )
@@ -49,5 +48,24 @@ Content-Type: application/json; charset=utf-8
 }
 
 ## Response  
-## 1.Updated,  Return the Pet updated with Status OK ( 200 )
+## 1.Updated,  Return the Company updated with Status OK ( 200 )
 ## 2.Not Found, Return Status Not Found ( 404 )
+
+## 6. Create An Empoyee to Specific Company
+POST http://{{hostname}}:{{port}}/api/companies/SLB
+Content-Type: application/json; charset=utf-8
+
+{
+    "Name": "SLB",
+    "Employees": []
+}
+## Response 
+### 1.Created, Return the Employee created with Status Created ( 201 )
+### 2.Already Existed, Return Status Bad Request ( 400 )
+
+## 6. Delete An Empoyee to Specific Company
+POST http://{{hostname}}:{{port}}/api/companies/SLB/employee_id
+Content-Type: application/json; charset=utf-8
+## Response 
+### 1.NoContent with the employee deleted successfully
+### 2.NotFound as the company_id or employee_id is wrong
