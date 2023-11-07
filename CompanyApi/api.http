@@ -1,0 +1,70 @@
+# For more info on HTTP files go to https://aka.ms/vs/httpfile
+
+@hostname=localhost
+@port=5128
+
+# Company APIS
+## POST /api/companies
+## GET /api/companies
+## GET /api/companies/{name}
+## GET /api/companies?page-size={x}&index={y}
+## PUT /api/companies/{name}
+
+## 1. Create Company
+POST http://{{hostname}}:{{port}}/api/companies
+Content-Type: application/json; charset=utf-8
+
+{
+    "Name": "SLB",
+}
+## Response 
+### 1.Created, Return the Company created with Status Created ( 201 )
+### 2.Already Existed, Return Status Bad Request ( 400 )
+
+## 2. Get All Companies
+GET http://{{hostname}}:{{port}}/api/companies
+## Response  
+### 1.Found, Return all Companies found with Status OK ( 200 )
+
+## 3. Get Company By Name
+GET http://{{hostname}}:{{port}}/api/companies/SLB
+## Response  
+###  1.Found, Return the Company found with Status OK ( 200 )
+###  2.Not Found, Return Status Not Found ( 404 )
+
+## 4. Get Companies By Page Size and Index
+Get http://{{hostname}}:{{port}}/api/companies?page_size=2&index=3
+## Response  
+###  1.Found, Return the Company found with Status OK ( 200 )
+###  2.Not Found, Return Status Not Found ( 404 )
+
+## 5. PUT Update Basic Information of Company
+PUT http://{{hostname}}:{{port}}/api/companies/SLB
+Content-Type: application/json; charset=utf-8
+
+{
+    "Name": 101,
+    "Employees": []
+}
+
+## Response  
+## 1.Updated,  Return the Company updated with Status OK ( 200 )
+## 2.Not Found, Return Status Not Found ( 404 )
+
+## 6. Create An Empoyee to Specific Company
+POST http://{{hostname}}:{{port}}/api/companies/SLB/employees
+Content-Type: application/json; charset=utf-8
+
+{
+    "Name": "Wang Ke"
+}
+## Response 
+### 1.Created, Return the Employee created with Status Created ( 201 )
+### 2.Already Existed, Return Status Bad Request ( 400 )
+
+## 6. Delete An Empoyee to Specific Company
+POST http://{{hostname}}:{{port}}/api/companies/SLB/employees/employee_id
+Content-Type: application/json; charset=utf-8
+## Response 
+### 1.NoContent with the employee deleted successfully
+### 2.NotFound as the company_id or employee_id is wrong
