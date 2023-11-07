@@ -1,4 +1,5 @@
-using CompanyApi;
+using CompanyApi.CreateRequests;
+using CompanyApi.Models;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Newtonsoft.Json;
 using System.Net;

@@ -1,4 +1,4 @@
-﻿namespace CompanyApi
+﻿namespace CompanyApi.CreateRequests
 {
     public class CreateEmployeeRequest
     {

@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using CompanyApi.CreateRequests;
+using CompanyApi.Models;
+using Microsoft.AspNetCore.Mvc;
 using System.Xml.Linq;
 
 namespace CompanyApi.Controllers
